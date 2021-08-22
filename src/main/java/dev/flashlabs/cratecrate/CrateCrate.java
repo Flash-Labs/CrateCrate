@@ -1,10 +1,13 @@
 package dev.flashlabs.cratecrate;
 
 import com.google.inject.Inject;
+import dev.flashlabs.cratecrate.command.Base;
 import dev.flashlabs.cratecrate.internal.Config;
+import org.spongepowered.api.command.Command;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.lifecycle.LoadedGameEvent;
 import org.spongepowered.api.event.lifecycle.RefreshGameEvent;
+import org.spongepowered.api.event.lifecycle.RegisterCommandEvent;
 import org.spongepowered.plugin.PluginContainer;
 import org.spongepowered.plugin.jvm.Plugin;
 
@@ -29,6 +32,11 @@ public final class CrateCrate {
     @Listener
     public void onRefresh(RefreshGameEvent event) {
         Config.load();
+    }
+
+    @Listener
+    public void onRegisterCommands(RegisterCommandEvent<Command.Parameterized> event) {
+        event.register(CrateCrate.getContainer(), Base.COMMAND, "cratecrate", "crate");
     }
 
     public static PluginContainer getContainer() {
