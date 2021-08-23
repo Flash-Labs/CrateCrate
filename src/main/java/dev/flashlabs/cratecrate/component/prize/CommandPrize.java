@@ -3,6 +3,8 @@ package dev.flashlabs.cratecrate.component.prize;
 import com.google.common.collect.ImmutableList;
 import dev.flashlabs.cratecrate.CrateCrate;
 import dev.flashlabs.cratecrate.component.Type;
+import dev.flashlabs.cratecrate.internal.Config;
+import dev.flashlabs.cratecrate.internal.Serializers;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.spongepowered.api.Sponge;
@@ -104,14 +106,40 @@ public final class CommandPrize extends Prize<String> {
             super("Command", CrateCrate.getContainer());
         }
 
+        /**
+         * Matches nodes having a {@code command} child or with a string value
+         * prefixed with {@code '/'}.
+         */
         @Override
         public boolean matches(ConfigurationNode node) {
-            throw new UnsupportedOperationException(); //TODO
+            return node.hasChild("command") || Optional.ofNullable(node.getString())
+                .map(s -> s.startsWith("/"))
+                .orElse(false);
         }
 
+        /**
+         * Deserializes a command prize, defined as:
+         *
+         * <pre>{@code
+         * CommandPrize:
+         *     name: Optional<String>
+         *     lore: Optional<List<String>>
+         *     icon: Optional<ItemType>
+         *     command: String (prefixed with '/')
+         * }</pre>
+         */
         @Override
         public CommandPrize deserializeComponent(ConfigurationNode node) throws SerializationException {
-            throw new UnsupportedOperationException(); //TODO
+            var name = Optional.ofNullable(node.node("name").get(String.class));
+            var lore = Optional.ofNullable(node.node("lore").getList(String.class)).map(ImmutableList::copyOf);
+            //TODO: Full ItemStack deserialization
+            var icon = node.hasChild("icon")
+                ? Optional.of(Serializers.ITEM_TYPE.deserialize(node.node("icon"))).map(t -> ItemStack.of(t).createSnapshot())
+                : Optional.<ItemStackSnapshot>empty();
+            var command = Optional.ofNullable(node.node("command").getString())
+                .map(s -> s.substring(1))
+                .orElse("");
+            return new CommandPrize(String.valueOf(node.key()), name, lore, icon, command);
         }
 
         @Override
@@ -119,9 +147,37 @@ public final class CommandPrize extends Prize<String> {
             throw new UnsupportedOperationException(); //TODO
         }
 
+        /**
+         * Deserialize a command prize reference, defined as:
+         *
+         * <pre>{@code
+         * CommandPrize Reference:
+         *     node: CommandPrize | String (CommandPrize id or prefixed with '/')
+         *     lore: Optional<List<String>>
+         *     icon: Optional<ItemType>
+         *     command: String (prefixed with '/')
+         * }</pre>
+         */
         @Override
         public Tuple<CommandPrize, String> deserializeReference(ConfigurationNode node, List<ConfigurationNode> values) throws SerializationException {
-            throw new UnsupportedOperationException(); //TODO
+            CommandPrize prize;
+            if (node.isMap()) {
+                prize = deserializeComponent(node);
+                prize = new CommandPrize("CommandPrize@" + node.path(), prize.name, prize.lore, prize.icon, prize.command);
+            } else {
+                var identifier = Optional.ofNullable(node.getString()).orElse("");
+                if (Config.PRIZES.containsKey(identifier)) {
+                    prize = (CommandPrize) Config.PRIZES.get(identifier);
+                } else if (identifier.startsWith("/")) {
+                    prize = new CommandPrize(identifier, Optional.empty(), Optional.empty(), Optional.empty(), identifier.substring(1));
+                    Config.PRIZES.put(prize.id, prize);
+                } else {
+                    throw new AssertionError(identifier);
+                }
+            }
+            //TODO: Validate reference value counts
+            var value = Optional.ofNullable((!values.isEmpty() ? values.get(0) : node.node("value")).getString()).orElse("");
+            return Tuple.of(prize, value);
         }
 
         @Override
