@@ -4,6 +4,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 import dev.flashlabs.cratecrate.CrateCrate;
 import dev.flashlabs.cratecrate.component.key.Key;
+import dev.flashlabs.cratecrate.internal.Config;
+import dev.flashlabs.cratecrate.internal.Serializers;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.spongepowered.api.data.Keys;
 import org.spongepowered.api.entity.living.player.server.ServerPlayer;
@@ -15,6 +17,7 @@ import org.spongepowered.api.world.Location;
 import org.spongepowered.configurate.ConfigurationNode;
 import org.spongepowered.configurate.serialize.SerializationException;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -134,7 +137,25 @@ public final class Crate extends Component<Void> {
 
         @Override
         public Crate deserializeComponent(ConfigurationNode node) throws SerializationException {
-            throw new UnsupportedOperationException(); //TODO
+            var name = Optional.ofNullable(node.node("name").get(String.class));
+            var lore = Optional.ofNullable(node.node("lore").getList(String.class)).map(ImmutableList::copyOf);
+            //TODO: Full ItemStack deserialization
+            var icon = node.hasChild("icon")
+                ? Optional.of(Serializers.ITEM_TYPE.deserialize(node.node("icon"))).map(t -> ItemStack.of(t).createSnapshot())
+                : Optional.<ItemStackSnapshot>empty();
+            var keys = new ArrayList<Tuple<? extends Key, Integer>>();
+            for (ConfigurationNode key : node.node("keys").childrenList()) {
+                var component = key.isList() ? key.node(0) : key;
+                var values = key.childrenList().subList(key.isList() ? 1 : 0, key.childrenList().size());
+                keys.add(Config.resolveKeyType(component).deserializeReference(component, values));
+            }
+            var rewards = new ArrayList<Tuple<? extends Reward, Integer>>();
+            for (ConfigurationNode reward : node.node("rewards").childrenList()) {
+                var component = reward.isList() ? reward.node(0) : reward;
+                var values = reward.childrenList().subList(reward.isList() ? 1 : 0, reward.childrenList().size());
+                rewards.add(Config.resolveRewardType(component).deserializeReference(component, values));
+            }
+            return new Crate(String.valueOf(node.key()), name, lore, icon, ImmutableList.copyOf(keys), ImmutableList.copyOf(rewards));
         }
 
         @Override
@@ -143,13 +164,13 @@ public final class Crate extends Component<Void> {
         }
 
         @Override
-        public Tuple<Crate, Void> deserializeReference(ConfigurationNode node, List<? extends ConfigurationNode> values) throws SerializationException {
-            throw new UnsupportedOperationException(); //TODO
+        public Tuple<Crate, Void> deserializeReference(ConfigurationNode node, List<? extends ConfigurationNode> values) {
+            throw new AssertionError("Crates cannot be referenced.");
         }
 
         @Override
-        public void reserializeReference(ConfigurationNode node, Tuple<Crate, Void> reference) throws SerializationException {
-            throw new UnsupportedOperationException(); //TODO
+        public void reserializeReference(ConfigurationNode node, Tuple<Crate, Void> reference) {
+            throw new AssertionError("Crates cannot be referenced.");
         }
 
     }

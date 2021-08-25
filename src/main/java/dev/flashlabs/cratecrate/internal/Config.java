@@ -2,8 +2,10 @@ package dev.flashlabs.cratecrate.internal;
 
 import dev.flashlabs.cratecrate.CrateCrate;
 import dev.flashlabs.cratecrate.component.Component;
+import dev.flashlabs.cratecrate.component.Crate;
 import dev.flashlabs.cratecrate.component.Reward;
 import dev.flashlabs.cratecrate.component.Type;
+import dev.flashlabs.cratecrate.component.key.Key;
 import dev.flashlabs.cratecrate.component.prize.Prize;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.configurate.ConfigurationNode;
@@ -18,8 +20,10 @@ import java.util.Map;
 
 public class Config {
 
-    public static final Map<String, Prize> PRIZES = new HashMap<>();
+    public static final Map<String, Crate> CRATES = new HashMap<>();
     public static final Map<String, Reward> REWARDS = new HashMap<>();
+    public static final Map<String, Prize> PRIZES = new HashMap<>();
+    public static final Map<String, Key> KEYS = new HashMap<>();
 
     private static final Path DIRECTORY = Sponge.configManager()
         .pluginConfig(CrateCrate.getContainer())
@@ -39,6 +43,11 @@ public class Config {
                 Reward reward = resolveRewardType(node).deserializeComponent(node);
                 REWARDS.put(reward.id, reward);
             }
+            var crates = load("config/crates.conf");
+            for (ConfigurationNode node : crates.childrenMap().values()) {
+                Crate crate = resolveCrateType(node).deserializeComponent(node);
+                CRATES.put(crate.id, crate);
+            }
             CrateCrate.getContainer().logger().info("Successfully loaded the config.");
         } catch (IOException e) {
             CrateCrate.getContainer().logger().error("Error loading the config: ", e);
@@ -51,12 +60,20 @@ public class Config {
         return HoconConfigurationLoader.builder().path(path).build().load();
     }
 
-    public static Type<? extends Reward, ?> resolveRewardType(ConfigurationNode node) throws SerializationException {
-        return Config.<Reward>resolveType(node, Reward.class, Reward.TYPES);
+    public static Type<? extends Crate, Void> resolveCrateType(ConfigurationNode node) throws SerializationException {
+        return (Type<? extends Crate, Void>) Config.<Crate>resolveType(node, Crate.class, Crate.TYPES);
+    }
+
+    public static Type<? extends Reward, Integer> resolveRewardType(ConfigurationNode node) throws SerializationException {
+        return (Type<? extends Reward, Integer>) Config.<Reward>resolveType(node, Reward.class, Reward.TYPES);
     }
 
     public static Type<? extends Prize, ?> resolvePrizeType(ConfigurationNode node) throws SerializationException {
         return Config.<Prize>resolveType(node, Prize.class, Prize.TYPES);
+    }
+
+    public static Type<? extends Key, Integer> resolveKeyType(ConfigurationNode node) throws SerializationException {
+        return (Type<? extends Key, Integer>) Config.<Key>resolveType(node, Key.class, Key.TYPES);
     }
 
     private static <T extends Component> Type<? extends T, ?> resolveType(
