@@ -45,8 +45,8 @@ public final class CommandPrize extends Prize<String> {
     }
 
     /**
-     * Returns the name of this prize, defaulting to the command (with slash) if
-     * undefined. If a reference value is given, it replaces {@code ${value}}.
+     * Returns the name of this prize, defaulting to the command prefixed with
+     * {@code '/'}. If a reference value is given, it replaces {@code ${value}}.
      */
     @Override
     public Component getName(Optional<String> value) {
@@ -58,8 +58,8 @@ public final class CommandPrize extends Prize<String> {
     }
 
     /**
-     * Returns the lore of this prize, defaulting to an empty list if undefined.
-     * If a reference value is given, it replaces {@code ${value}}.
+     * Returns the lore of this prize, defaulting to an empty list. If a
+     * reference value is given, it replaces {@code ${value}}.
      */
     @Override
     public List<Component> getLore(Optional<String> value) {
@@ -72,9 +72,9 @@ public final class CommandPrize extends Prize<String> {
     }
 
     /**
-     * Returns the icon of this prize, defaulting to a filled map if undefined.
-     * If the icon does not have a defined display name or lore, it is set to
-     * {@link #getName(Optional)} / {@link #getLore(Optional)}.
+     * Returns the icon of this prize, defaulting to a filled map. If the icon
+     * does not have a defined display name or lore, it is set to this prize's
+     * name/lore.
      */
     @Override
     public ItemStack getIcon(Optional<String> value) {
