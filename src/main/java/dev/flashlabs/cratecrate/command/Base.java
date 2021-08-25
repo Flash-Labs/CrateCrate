@@ -1,6 +1,7 @@
 package dev.flashlabs.cratecrate.command;
 
 import dev.flashlabs.cratecrate.CrateCrate;
+import dev.flashlabs.cratecrate.command.crate.Crate;
 import dev.flashlabs.cratecrate.command.prize.Prize;
 import dev.flashlabs.cratecrate.command.reward.Reward;
 import net.kyori.adventure.identity.Identity;
@@ -17,6 +18,7 @@ public final class Base {
 
     public static Command.Parameterized COMMAND = Command.builder()
         .permission("cratecrate.command.base")
+        .addChild(Crate.COMMAND, "crate")
         .addChild(Reward.COMMAND, "reward")
         .addChild(Prize.COMMAND, "prize")
         .executor(Base::execute)
