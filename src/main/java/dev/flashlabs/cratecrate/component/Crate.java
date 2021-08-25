@@ -96,7 +96,7 @@ public final class Crate extends Component<Void> {
         }
 
         @Override
-        public Tuple<Crate, Void> deserializeReference(ConfigurationNode node, List<ConfigurationNode> values) throws SerializationException {
+        public Tuple<Crate, Void> deserializeReference(ConfigurationNode node, List<? extends ConfigurationNode> values) throws SerializationException {
             throw new UnsupportedOperationException(); //TODO
         }
 

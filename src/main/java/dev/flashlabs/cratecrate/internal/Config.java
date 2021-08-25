@@ -2,6 +2,7 @@ package dev.flashlabs.cratecrate.internal;
 
 import dev.flashlabs.cratecrate.CrateCrate;
 import dev.flashlabs.cratecrate.component.Component;
+import dev.flashlabs.cratecrate.component.Reward;
 import dev.flashlabs.cratecrate.component.Type;
 import dev.flashlabs.cratecrate.component.prize.Prize;
 import org.spongepowered.api.Sponge;
@@ -18,6 +19,7 @@ import java.util.Map;
 public class Config {
 
     public static final Map<String, Prize> PRIZES = new HashMap<>();
+    public static final Map<String, Reward> REWARDS = new HashMap<>();
 
     private static final Path DIRECTORY = Sponge.configManager()
         .pluginConfig(CrateCrate.getContainer())
@@ -29,8 +31,13 @@ public class Config {
             var main = load("cratecrate.conf");
             var prizes = load("config/prizes.conf");
             for (ConfigurationNode node : prizes.childrenMap().values()) {
-                Prize prize = ((Type<? extends Prize, ?>) resolveType(node, Prize.class, Prize.TYPES)).deserializeComponent(node);
+                Prize prize = resolvePrizeType(node).deserializeComponent(node);
                 PRIZES.put(prize.id, prize);
+            }
+            var rewards = load("config/rewards.conf");
+            for (ConfigurationNode node : rewards.childrenMap().values()) {
+                Reward reward = resolveRewardType(node).deserializeComponent(node);
+                REWARDS.put(reward.id, reward);
             }
             CrateCrate.getContainer().logger().info("Successfully loaded the config.");
         } catch (IOException e) {
@@ -44,7 +51,15 @@ public class Config {
         return HoconConfigurationLoader.builder().path(path).build().load();
     }
 
-    private static <T extends Component<?>> Type<? extends T, ?> resolveType(
+    public static Type<? extends Reward, ?> resolveRewardType(ConfigurationNode node) throws SerializationException {
+        return Config.<Reward>resolveType(node, Reward.class, Reward.TYPES);
+    }
+
+    public static Type<? extends Prize, ?> resolvePrizeType(ConfigurationNode node) throws SerializationException {
+        return Config.<Prize>resolveType(node, Prize.class, Prize.TYPES);
+    }
+
+    private static <T extends Component> Type<? extends T, ?> resolveType(
         ConfigurationNode node,
         Class<T> component,
         Map<String, Type<? extends T, ?>> types

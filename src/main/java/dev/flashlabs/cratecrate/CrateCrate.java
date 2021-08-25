@@ -2,6 +2,7 @@ package dev.flashlabs.cratecrate;
 
 import com.google.inject.Inject;
 import dev.flashlabs.cratecrate.command.Base;
+import dev.flashlabs.cratecrate.component.Reward;
 import dev.flashlabs.cratecrate.component.prize.CommandPrize;
 import dev.flashlabs.cratecrate.component.prize.Prize;
 import dev.flashlabs.cratecrate.internal.Config;
@@ -30,6 +31,7 @@ public final class CrateCrate {
     @Listener
     public void onConstruct(ConstructPluginEvent event) {
         Prize.TYPES.put(CommandPrize.TYPE.name, CommandPrize.TYPE);
+        Reward.TYPES.put(Reward.TYPE.name, Reward.TYPE);
     }
 
     @Listener

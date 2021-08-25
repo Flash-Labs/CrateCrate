@@ -23,7 +23,7 @@ public abstract class Type<T extends Component<V>, V> {
 
     public abstract void reserializeComponent(ConfigurationNode node, T component) throws SerializationException;
 
-    public abstract Tuple<T, V> deserializeReference(ConfigurationNode node, List<ConfigurationNode> values) throws SerializationException;
+    public abstract Tuple<T, V> deserializeReference(ConfigurationNode node, List<? extends ConfigurationNode> values) throws SerializationException;
 
     public abstract void reserializeReference(ConfigurationNode node, Tuple<T, V> reference) throws SerializationException;
 

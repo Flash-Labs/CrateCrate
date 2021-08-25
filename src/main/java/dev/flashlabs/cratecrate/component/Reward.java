@@ -3,6 +3,8 @@ package dev.flashlabs.cratecrate.component;
 import com.google.common.collect.ImmutableList;
 import dev.flashlabs.cratecrate.CrateCrate;
 import dev.flashlabs.cratecrate.component.prize.Prize;
+import dev.flashlabs.cratecrate.internal.Config;
+import dev.flashlabs.cratecrate.internal.Serializers;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.spongepowered.api.data.Keys;
 import org.spongepowered.api.entity.living.player.User;
@@ -13,6 +15,7 @@ import org.spongepowered.api.util.Tuple;
 import org.spongepowered.configurate.ConfigurationNode;
 import org.spongepowered.configurate.serialize.SerializationException;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -123,9 +126,32 @@ public final class Reward extends Component<Integer> {
             return true;
         }
 
+        /**
+         * Deserializes a reward, defined as:
+         *
+         * <pre>{@code
+         * Reward:
+         *     name: Optional<String>
+         *     lore: Optional<List<String>>
+         *     icon: Optional<ItemType>
+         *     prizes: List<PrizeReference>
+         * }</pre>
+         */
         @Override
         public Reward deserializeComponent(ConfigurationNode node) throws SerializationException {
-            throw new UnsupportedOperationException(); //TODO
+            var name = Optional.ofNullable(node.node("name").get(String.class));
+            var lore = Optional.ofNullable(node.node("lore").getList(String.class)).map(ImmutableList::copyOf);
+            //TODO: Full ItemStack deserialization
+            var icon = node.hasChild("icon")
+                ? Optional.of(Serializers.ITEM_TYPE.deserialize(node.node("icon"))).map(t -> ItemStack.of(t).createSnapshot())
+                : Optional.<ItemStackSnapshot>empty();
+            var prizes = new ArrayList<Tuple<? extends Prize, ?>>();
+            for (ConfigurationNode prize : node.node("prizes").childrenList()) {
+                var component = prize.isList() ? prize.node(0) : prize;
+                var values = prize.childrenList().subList(prize.isList() ? 1 : 0, prize.childrenList().size());
+                prizes.add(Config.resolvePrizeType(component).deserializeReference(component, values));
+            }
+            return new Reward(String.valueOf(node.key()), name, lore, icon, ImmutableList.copyOf(prizes));
         }
 
         @Override
@@ -133,9 +159,46 @@ public final class Reward extends Component<Integer> {
             throw new UnsupportedOperationException(); //TODO
         }
 
+        /**
+         * Deserialize a reward reference, defined as:
+         *
+         * <pre>{@code
+         * RewardReference:
+         *     node: Reward | String (Reward id) | PrizeReference (map/string)
+         *        weight: Integer (required for Reward, required for
+         *            PrizeReference when reference value is not defined)
+         *     values: [
+         *        list... (limit 1 for Reward/String),
+         *        Optional<Integer> (required for String, required for
+         *            PrizeReference when weight is not defined)
+         *     ]
+         * }</pre>
+         */
         @Override
-        public Tuple<Reward, Integer> deserializeReference(ConfigurationNode node, List<ConfigurationNode> values) throws SerializationException {
-            throw new UnsupportedOperationException(); //TODO
+        public Tuple<Reward, Integer> deserializeReference(ConfigurationNode node, List<? extends ConfigurationNode> values) throws SerializationException {
+            Reward reward;
+            if (node.isMap()) {
+                if (node.hasChild("prizes")) {
+                    reward = deserializeComponent(node);
+                    reward = new Reward("Reward@" + node.path(), reward.name, reward.lore, reward.icon, reward.prizes);
+                } else {
+                    var prize = Config.resolvePrizeType(node).deserializeReference(node, values.subList(values.isEmpty() ? 0 : 1, values.size()));
+                    reward = new Reward("Reward@" + node.path(), Optional.empty(), Optional.empty(), Optional.empty(), ImmutableList.of(prize));
+                    Config.REWARDS.put(reward.id, reward);
+                }
+            } else {
+                var identifier = Optional.ofNullable(node.getString()).orElse("");
+                if (Config.REWARDS.containsKey(identifier)) {
+                    reward = Config.REWARDS.get(identifier);
+                } else {
+                    var prize = Config.resolvePrizeType(node).deserializeReference(node, values.subList(values.isEmpty() ? 0 : 1, values.size()));
+                    reward = new Reward(identifier, Optional.empty(), Optional.empty(), Optional.empty(), ImmutableList.of(prize));
+                    Config.REWARDS.put(reward.id, reward);
+                }
+            }
+            //TODO: Validate reference value counts and existence
+            var value = (!values.isEmpty() ? values.get(0) : node.node("weight")).getInt();
+            return Tuple.of(reward, value);
         }
 
         @Override

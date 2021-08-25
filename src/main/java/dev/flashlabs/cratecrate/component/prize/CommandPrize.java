@@ -151,15 +151,17 @@ public final class CommandPrize extends Prize<String> {
          * Deserialize a command prize reference, defined as:
          *
          * <pre>{@code
-         * CommandPrize Reference:
-         *     node: CommandPrize | String (CommandPrize id or prefixed with '/')
-         *     lore: Optional<List<String>>
-         *     icon: Optional<ItemType>
-         *     command: String (prefixed with '/')
+         * CommandPrizeReference:
+         *     node:
+         *        CommandPrize |
+         *        String (CommandPrize id or prefixed with '/')
+         *     values: [
+         *        Optional<String> (only allowed with String CommandPrize id)
+         *     ]
          * }</pre>
          */
         @Override
-        public Tuple<CommandPrize, String> deserializeReference(ConfigurationNode node, List<ConfigurationNode> values) throws SerializationException {
+        public Tuple<CommandPrize, String> deserializeReference(ConfigurationNode node, List<? extends ConfigurationNode> values) throws SerializationException {
             CommandPrize prize;
             if (node.isMap()) {
                 prize = deserializeComponent(node);
