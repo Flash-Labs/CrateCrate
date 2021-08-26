@@ -7,6 +7,7 @@ import dev.flashlabs.cratecrate.component.Reward;
 import dev.flashlabs.cratecrate.component.prize.CommandPrize;
 import dev.flashlabs.cratecrate.component.prize.Prize;
 import dev.flashlabs.cratecrate.internal.Config;
+import dev.flashlabs.cratecrate.internal.Storage;
 import org.spongepowered.api.command.Command;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.lifecycle.ConstructPluginEvent;
@@ -39,11 +40,13 @@ public final class CrateCrate {
     @Listener
     public void onLoaded(LoadedGameEvent event) {
         Config.load();
+        Storage.load();
     }
 
     @Listener
     public void onRefresh(RefreshGameEvent event) {
         Config.load();
+        Storage.load();
     }
 
     @Listener

@@ -4,6 +4,7 @@ import org.spongepowered.plugin.metadata.PluginDependency
 plugins {
     `java-library`
     id("org.spongepowered.gradle.plugin") version "1.1.1"
+    id("com.github.johnrengelman.shadow") version "7.0.0"
 }
 
 group = "dev.flashlabs.cratecrate"
@@ -11,6 +12,10 @@ version = "0.1.0"
 
 repositories {
     mavenCentral()
+}
+
+dependencies {
+    implementation("com.h2database:h2:1.4.200")
 }
 
 sponge {
@@ -53,4 +58,16 @@ tasks.withType(JavaCompile::class).configureEach {
 tasks.withType(AbstractArchiveTask::class).configureEach {
     isReproducibleFileOrder = true
     isPreserveFileTimestamps = false
+}
+
+tasks.shadowJar {
+    archiveClassifier.set("")
+    dependencies {
+        include(dependency("com.h2database:h2:1.4.200"))
+    }
+    relocate("org.h2", "${project.group}.shadow.org.h2")
+}
+
+tasks.build {
+    dependsOn("shadowJar")
 }
