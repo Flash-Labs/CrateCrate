@@ -33,6 +33,11 @@ public class Config {
         try {
             Files.createDirectories(DIRECTORY.resolve("config"));
             var main = load("cratecrate.conf");
+            var keys = load("config/keys.conf");
+            for (ConfigurationNode node : keys.childrenMap().values()) {
+                Key key = resolveKeyType(node).deserializeComponent(node);
+                KEYS.put(key.id, key);
+            }
             var prizes = load("config/prizes.conf");
             for (ConfigurationNode node : prizes.childrenMap().values()) {
                 Prize prize = resolvePrizeType(node).deserializeComponent(node);

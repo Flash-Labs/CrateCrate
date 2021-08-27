@@ -3,6 +3,8 @@ package dev.flashlabs.cratecrate.component.key;
 import com.google.common.collect.ImmutableList;
 import dev.flashlabs.cratecrate.CrateCrate;
 import dev.flashlabs.cratecrate.component.Type;
+import dev.flashlabs.cratecrate.internal.Config;
+import dev.flashlabs.cratecrate.internal.Serializers;
 import dev.flashlabs.cratecrate.internal.Storage;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.spongepowered.api.data.Keys;
@@ -128,7 +130,13 @@ public class StandardKey extends Key {
 
         @Override
         public StandardKey deserializeComponent(ConfigurationNode node) throws SerializationException {
-            throw new UnsupportedOperationException(); //TODO
+            var name = Optional.ofNullable(node.node("name").get(String.class));
+            var lore = Optional.ofNullable(node.node("lore").getList(String.class)).map(ImmutableList::copyOf);
+            //TODO: Full ItemStack deserialization
+            var icon = node.hasChild("icon")
+                ? Optional.of(Serializers.ITEM_TYPE.deserialize(node.node("icon"))).map(t -> ItemStack.of(t).createSnapshot())
+                : Optional.<ItemStackSnapshot>empty();
+            return new StandardKey(String.valueOf(node.key()), name, lore, icon);
         }
 
         @Override
@@ -138,7 +146,21 @@ public class StandardKey extends Key {
 
         @Override
         public Tuple<StandardKey, Integer> deserializeReference(ConfigurationNode node, List<? extends ConfigurationNode> values) throws SerializationException {
-            throw new UnsupportedOperationException(); //TODO
+            StandardKey key;
+            if (node.isMap()) {
+                key = deserializeComponent(node);
+                key = new StandardKey("StandardKey@" + node.path(), key.name, key.lore, key.icon);
+                Config.KEYS.put(key.id, key);
+            } else {
+                var identifier = Optional.ofNullable(node.getString()).orElse("");
+                if (Config.KEYS.containsKey(identifier)) {
+                    key = (StandardKey) Config.KEYS.get(identifier);
+                } else {
+                    key = new StandardKey(identifier, Optional.empty(), Optional.empty(), Optional.empty());
+                }
+            }
+            int quantity = (!values.isEmpty() ? values.get(0) : node.node("quantity")).getInt(1);
+            return Tuple.of(key, quantity);
         }
 
         @Override
