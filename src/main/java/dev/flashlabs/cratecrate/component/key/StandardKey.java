@@ -132,9 +132,8 @@ public class StandardKey extends Key {
         public StandardKey deserializeComponent(ConfigurationNode node) throws SerializationException {
             var name = Optional.ofNullable(node.node("name").get(String.class));
             var lore = Optional.ofNullable(node.node("lore").getList(String.class)).map(ImmutableList::copyOf);
-            //TODO: Full ItemStack deserialization
             var icon = node.hasChild("icon")
-                ? Optional.of(Serializers.ITEM_TYPE.deserialize(node.node("icon"))).map(t -> ItemStack.of(t).createSnapshot())
+                ? Optional.of(Serializers.ITEM_STACK.deserialize(node.node("icon")).createSnapshot())
                 : Optional.<ItemStackSnapshot>empty();
             return new StandardKey(String.valueOf(node.key()), name, lore, icon);
         }

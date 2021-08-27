@@ -141,9 +141,8 @@ public final class Reward extends Component<Integer> {
         public Reward deserializeComponent(ConfigurationNode node) throws SerializationException {
             var name = Optional.ofNullable(node.node("name").get(String.class));
             var lore = Optional.ofNullable(node.node("lore").getList(String.class)).map(ImmutableList::copyOf);
-            //TODO: Full ItemStack deserialization
             var icon = node.hasChild("icon")
-                ? Optional.of(Serializers.ITEM_TYPE.deserialize(node.node("icon"))).map(t -> ItemStack.of(t).createSnapshot())
+                ? Optional.of(Serializers.ITEM_STACK.deserialize(node.node("icon")).createSnapshot())
                 : Optional.<ItemStackSnapshot>empty();
             var prizes = new ArrayList<Tuple<? extends Prize, ?>>();
             for (ConfigurationNode prize : node.node("prizes").childrenList()) {
