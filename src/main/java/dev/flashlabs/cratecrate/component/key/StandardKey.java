@@ -73,8 +73,8 @@ public class StandardKey extends Key {
     public ItemStack getIcon(Optional<Integer> quantity) {
         var base = icon.map(ItemStackSnapshot::createStack)
             .orElseGet(() -> ItemStack.of(ItemTypes.TRIPWIRE_HOOK, 1));
-        if (base.get(Keys.DISPLAY_NAME).isEmpty()) {
-            base.offer(Keys.DISPLAY_NAME, getName(Optional.empty()));
+        if (base.get(Keys.CUSTOM_NAME).isEmpty()) {
+            base.offer(Keys.CUSTOM_NAME, getName(Optional.empty()));
         }
         if (base.get(Keys.LORE).isEmpty()) {
             base.offer(Keys.LORE, getLore(Optional.empty()));

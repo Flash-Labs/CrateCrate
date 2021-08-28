@@ -82,8 +82,8 @@ public final class Crate extends Component<Void> {
     public ItemStack getIcon(Optional<Void> ignored) {
         var base = icon.map(ItemStackSnapshot::createStack)
             .orElseGet(() -> ItemStack.of(ItemTypes.CHEST, 1));
-        if (base.get(Keys.DISPLAY_NAME).isEmpty()) {
-            base.offer(Keys.DISPLAY_NAME, getName(Optional.empty()));
+        if (base.get(Keys.CUSTOM_NAME).isEmpty()) {
+            base.offer(Keys.CUSTOM_NAME, getName(Optional.empty()));
         }
         if (base.get(Keys.LORE).isEmpty()) {
             base.offer(Keys.LORE, getLore(Optional.empty()));

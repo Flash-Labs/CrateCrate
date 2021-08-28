@@ -80,8 +80,8 @@ public final class CommandPrize extends Prize<String> {
     public ItemStack getIcon(Optional<String> value) {
         var base = icon.map(ItemStackSnapshot::createStack)
             .orElseGet(() -> ItemStack.of(ItemTypes.FILLED_MAP, 1));
-        if (base.get(Keys.DISPLAY_NAME).isEmpty()) {
-            base.offer(Keys.DISPLAY_NAME, getName(value));
+        if (base.get(Keys.CUSTOM_NAME).isEmpty()) {
+            base.offer(Keys.CUSTOM_NAME, getName(value));
         }
         if (lore.isPresent() && base.get(Keys.LORE).isEmpty()) {
             base.offer(Keys.LORE, getLore(value));

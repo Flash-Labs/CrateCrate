@@ -47,7 +47,7 @@ public class Serializers {
             var builder = ItemStack.builder()
                 .itemType(ITEM_TYPE.deserialize(node.isMap() ? node.node("type") : node));
             if (node.hasChild("name")) {
-                builder.add(Keys.DISPLAY_NAME, LegacyComponentSerializer.legacyAmpersand().deserialize(node.node("name").getString("")));
+                builder.add(Keys.CUSTOM_NAME, LegacyComponentSerializer.legacyAmpersand().deserialize(node.node("name").getString("")));
             }
             if (node.hasChild("lore")) {
                 builder.add(Keys.LORE, node.node("lore").childrenList().stream()
@@ -77,8 +77,8 @@ public class Serializers {
         @Override
         public void reserialize(ConfigurationNode node, ItemStack value) throws SerializationException {
             ITEM_TYPE.reserialize(value.getKeys().isEmpty() && value.quantity() == 1 ? node : node.node("type"), value.type());
-            if (value.get(Keys.DISPLAY_NAME).isPresent()) {
-                node.node("name").set(LegacyComponentSerializer.legacyAmpersand().serialize(value.get(Keys.DISPLAY_NAME).get()));
+            if (value.get(Keys.CUSTOM_NAME).isPresent()) {
+                node.node("name").set(LegacyComponentSerializer.legacyAmpersand().serialize(value.get(Keys.CUSTOM_NAME).get()));
             }
             if (value.get(Keys.LORE).isPresent()) {
                 node.node("lore").set(value.get(Keys.LORE).get().stream()

@@ -98,8 +98,8 @@ public final class Reward extends Component<Integer> {
                 return ItemStack.of(ItemTypes.BOOK, 1);
             }
         });
-        if (base.get(Keys.DISPLAY_NAME).isEmpty()) {
-            base.offer(Keys.DISPLAY_NAME, getName(weight));
+        if (base.get(Keys.CUSTOM_NAME).isEmpty()) {
+            base.offer(Keys.CUSTOM_NAME, getName(weight));
         }
         if (base.get(Keys.LORE).isEmpty()) {
             base.offer(Keys.LORE, getLore(weight));
