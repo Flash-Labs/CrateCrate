@@ -138,7 +138,9 @@ public final class Crate extends Component<Void> {
         @Override
         public Crate deserializeComponent(ConfigurationNode node) throws SerializationException {
             var name = Optional.ofNullable(node.node("name").get(String.class));
-            var lore = Optional.ofNullable(node.node("lore").getList(String.class)).map(ImmutableList::copyOf);
+            var lore = node.node("lore").isList()
+                ? Optional.ofNullable(node.node("lore").getList(String.class)).map(ImmutableList::copyOf)
+                : Optional.<ImmutableList<String>>empty();
             var icon = node.hasChild("icon")
                 ? Optional.of(Serializers.ITEM_STACK.deserialize(node.node("icon")).createSnapshot())
                 : Optional.<ItemStackSnapshot>empty();
