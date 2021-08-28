@@ -1,6 +1,7 @@
 package dev.flashlabs.cratecrate.command.prize;
 
 import dev.flashlabs.cratecrate.component.prize.CommandPrize;
+import dev.flashlabs.cratecrate.component.prize.ItemPrize;
 import dev.flashlabs.cratecrate.component.prize.Prize;
 import dev.flashlabs.cratecrate.internal.Config;
 import io.leangen.geantyref.TypeToken;
@@ -26,6 +27,8 @@ public final class Give {
         var value = context.one(Parameter.key("value", String.class));
         if (prize instanceof CommandPrize) {
             prize.give(player.user(), value.orElse(""));
+        } else if (prize instanceof ItemPrize) {
+            prize.give(player.user(), value.map(Integer::parseInt).orElse(1));
         } else {
             throw new AssertionError(prize.getClass().getName());
         }
