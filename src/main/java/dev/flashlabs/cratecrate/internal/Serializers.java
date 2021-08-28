@@ -1,5 +1,6 @@
 package dev.flashlabs.cratecrate.internal;
 
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.spongepowered.api.ResourceKey;
 import org.spongepowered.api.data.Keys;
@@ -80,8 +81,10 @@ public class Serializers {
             if (value.get(Keys.CUSTOM_NAME).isPresent()) {
                 node.node("name").set(LegacyComponentSerializer.legacyAmpersand().serialize(value.get(Keys.CUSTOM_NAME).get()));
             }
-            if (value.get(Keys.LORE).isPresent()) {
-                node.node("lore").set(value.get(Keys.LORE).get().stream()
+            //TODO: Replace with base.get(Keys.LORE).isPresent(); see SpongePowered/Sponge#3512
+            var lore = value.toContainer().get(DataQuery.of("UnsafeData", "display", "Lore"));
+            if (lore.isPresent()) {
+                node.node("lore").set(((List<Component>) lore.get()).stream()
                     .map(t -> LegacyComponentSerializer.legacyAmpersand().serialize(t))
                     .toList());
             }

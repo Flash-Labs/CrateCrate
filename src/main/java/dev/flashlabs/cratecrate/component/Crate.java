@@ -8,6 +8,7 @@ import dev.flashlabs.cratecrate.internal.Config;
 import dev.flashlabs.cratecrate.internal.Serializers;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.spongepowered.api.data.Keys;
+import org.spongepowered.api.data.persistence.DataQuery;
 import org.spongepowered.api.entity.living.player.server.ServerPlayer;
 import org.spongepowered.api.item.ItemTypes;
 import org.spongepowered.api.item.inventory.ItemStack;
@@ -85,7 +86,8 @@ public final class Crate extends Component<Void> {
         if (base.get(Keys.CUSTOM_NAME).isEmpty()) {
             base.offer(Keys.CUSTOM_NAME, getName(Optional.empty()));
         }
-        if (base.get(Keys.LORE).isEmpty()) {
+        //TODO: Replace with base.get(Keys.LORE).isAbsent(); see SpongePowered/Sponge#3512
+        if (lore.isPresent() && !base.toContainer().contains(DataQuery.of("UnsafeData", "display", "Lore"))) {
             base.offer(Keys.LORE, getLore(Optional.empty()));
         }
         return base;

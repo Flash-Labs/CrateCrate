@@ -8,6 +8,7 @@ import dev.flashlabs.cratecrate.internal.Serializers;
 import dev.flashlabs.cratecrate.internal.Storage;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.spongepowered.api.data.Keys;
+import org.spongepowered.api.data.persistence.DataQuery;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.item.ItemTypes;
 import org.spongepowered.api.item.inventory.ItemStack;
@@ -74,10 +75,11 @@ public class StandardKey extends Key {
         var base = icon.map(ItemStackSnapshot::createStack)
             .orElseGet(() -> ItemStack.of(ItemTypes.TRIPWIRE_HOOK, 1));
         if (base.get(Keys.CUSTOM_NAME).isEmpty()) {
-            base.offer(Keys.CUSTOM_NAME, getName(Optional.empty()));
+            base.offer(Keys.CUSTOM_NAME, getName(quantity));
         }
-        if (base.get(Keys.LORE).isEmpty()) {
-            base.offer(Keys.LORE, getLore(Optional.empty()));
+        //TODO: Replace with base.get(Keys.LORE).isAbsent(); see SpongePowered/Sponge#3512
+        if (lore.isPresent() && !base.toContainer().contains(DataQuery.of("UnsafeData", "display", "Lore"))) {
+            base.offer(Keys.LORE, getLore(quantity));
         }
         return base;
     }
