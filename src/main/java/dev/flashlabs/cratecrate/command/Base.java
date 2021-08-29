@@ -3,6 +3,7 @@ package dev.flashlabs.cratecrate.command;
 import dev.flashlabs.cratecrate.CrateCrate;
 import dev.flashlabs.cratecrate.command.crate.Crate;
 import dev.flashlabs.cratecrate.command.key.Key;
+import dev.flashlabs.cratecrate.command.location.Location;
 import dev.flashlabs.cratecrate.command.prize.Prize;
 import dev.flashlabs.cratecrate.command.reward.Reward;
 import net.kyori.adventure.identity.Identity;
@@ -23,6 +24,7 @@ public final class Base {
         .addChild(Reward.COMMAND, "reward")
         .addChild(Prize.COMMAND, "prize")
         .addChild(Key.COMMAND, "key")
+        .addChild(Location.COMMAND, "location")
         .executor(Base::execute)
         .build();
 
