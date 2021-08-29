@@ -16,7 +16,7 @@ public abstract class Key extends Component<Integer> {
         super(id);
     }
 
-    public abstract Optional<Integer> get(User user);
+    public abstract Optional<Integer> quantity(User user);
 
     public abstract boolean check(User user, Integer value);
 

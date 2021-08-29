@@ -57,7 +57,7 @@ public final class Crate extends Component<Void> {
      * Returns the name of this crate, defaulting to the id.
      */
     @Override
-    public net.kyori.adventure.text.Component getName(Optional<Void> ignored) {
+    public net.kyori.adventure.text.Component name(Optional<Void> ignored) {
         return name.map(s -> LegacyComponentSerializer.legacyAmpersand().deserialize(s))
             .orElseGet(() -> net.kyori.adventure.text.Component.text(id));
     }
@@ -66,7 +66,7 @@ public final class Crate extends Component<Void> {
      * Returns the lore of this crate, defaulting to an empty list.
      */
     @Override
-    public List<net.kyori.adventure.text.Component> getLore(Optional<Void> ignored) {
+    public List<net.kyori.adventure.text.Component> lore(Optional<Void> ignored) {
         return lore
             .map(l -> l.stream()
                 .map(s -> LegacyComponentSerializer.legacyAmpersand().deserialize(s).asComponent())
@@ -80,24 +80,24 @@ public final class Crate extends Component<Void> {
      * name/lore.
      */
     @Override
-    public ItemStack getIcon(Optional<Void> ignored) {
+    public ItemStack icon(Optional<Void> ignored) {
         var base = icon.map(ItemStackSnapshot::createStack)
             .orElseGet(() -> ItemStack.of(ItemTypes.CHEST, 1));
         if (base.get(Keys.CUSTOM_NAME).isEmpty()) {
-            base.offer(Keys.CUSTOM_NAME, getName(Optional.empty()));
+            base.offer(Keys.CUSTOM_NAME, name(Optional.empty()));
         }
         //TODO: Replace with base.get(Keys.LORE).isAbsent(); see SpongePowered/Sponge#3512
         if (lore.isPresent() && !base.toContainer().contains(DataQuery.of("UnsafeData", "display", "Lore"))) {
-            base.offer(Keys.LORE, getLore(Optional.empty()));
+            base.offer(Keys.LORE, lore(Optional.empty()));
         }
         return base;
     }
 
-    public ImmutableList<Tuple<? extends Key, Integer>> getKeys() {
+    public ImmutableList<Tuple<? extends Key, Integer>> keys() {
         return keys;
     }
 
-    public ImmutableList<Tuple<? extends Reward, Integer>> getRewards() {
+    public ImmutableList<Tuple<? extends Reward, Integer>> rewards() {
         return rewards;
     }
 
@@ -129,7 +129,7 @@ public final class Crate extends Component<Void> {
     public static final class CrateType extends Type<Crate, Void> {
 
         private CrateType() {
-            super("Crate", CrateCrate.getContainer());
+            super("Crate", CrateCrate.container());
         }
 
         @Override

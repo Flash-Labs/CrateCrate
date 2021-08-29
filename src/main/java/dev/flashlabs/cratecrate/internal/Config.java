@@ -26,7 +26,7 @@ public class Config {
     public static final Map<String, Key> KEYS = new HashMap<>();
 
     private static final Path DIRECTORY = Sponge.configManager()
-        .pluginConfig(CrateCrate.getContainer())
+        .pluginConfig(CrateCrate.container())
         .directory();
 
     public static void load() {
@@ -36,32 +36,32 @@ public class Config {
             var keys = load("config/keys.conf");
             for (ConfigurationNode node : keys.childrenMap().values()) {
                 Key key = resolveKeyType(node).deserializeComponent(node);
-                KEYS.put(key.id, key);
+                KEYS.put(key.id(), key);
             }
             var prizes = load("config/prizes.conf");
             for (ConfigurationNode node : prizes.childrenMap().values()) {
                 Prize prize = resolvePrizeType(node).deserializeComponent(node);
-                PRIZES.put(prize.id, prize);
+                PRIZES.put(prize.id(), prize);
             }
             var rewards = load("config/rewards.conf");
             for (ConfigurationNode node : rewards.childrenMap().values()) {
                 Reward reward = resolveRewardType(node).deserializeComponent(node);
-                REWARDS.put(reward.id, reward);
+                REWARDS.put(reward.id(), reward);
             }
             var crates = load("config/crates.conf");
             for (ConfigurationNode node : crates.childrenMap().values()) {
                 Crate crate = resolveCrateType(node).deserializeComponent(node);
-                CRATES.put(crate.id, crate);
+                CRATES.put(crate.id(), crate);
             }
-            CrateCrate.getContainer().logger().info("Successfully loaded the config.");
+            CrateCrate.container().logger().info("Successfully loaded the config.");
         } catch (IOException e) {
-            CrateCrate.getContainer().logger().error("Error loading the config: ", e);
+            CrateCrate.container().logger().error("Error loading the config: ", e);
         }
     }
 
     private static ConfigurationNode load(String name) throws IOException {
         Path path = DIRECTORY.resolve(name);
-        Sponge.assetManager().asset(CrateCrate.getContainer(), name).get().copyToFile(path);
+        Sponge.assetManager().asset(CrateCrate.container(), name).get().copyToFile(path);
         return HoconConfigurationLoader.builder().path(path).build().load();
     }
 
@@ -101,7 +101,7 @@ public class Config {
             case 0: throw new SerializationException(node, component, "Unable to identify type.");
             case 1: return matches.get(0);
             default:
-                var names = matches.stream().map(t -> t.name).toList();
+                var names = matches.stream().map(Type::name).toList();
                 throw new SerializationException(node, component, "Node matched multiple types: " + names + ".");
         }
     }

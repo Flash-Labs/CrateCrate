@@ -9,12 +9,20 @@ import java.util.List;
 
 public abstract class Type<T extends Component<V>, V> {
 
-    public final String name;
-    public final PluginContainer container;
+    private final String name;
+    private final PluginContainer container;
 
     public Type(String name, PluginContainer container) {
         this.name = name;
         this.container = container;
+    }
+
+    public final String name() {
+        return name;
+    }
+
+    public final PluginContainer container() {
+        return container;
     }
 
     public abstract boolean matches(ConfigurationNode node);

@@ -50,7 +50,7 @@ public final class ItemPrize extends Prize<Integer> {
      * reference value is given, it replaces {@code ${quantity}}.
      */
     @Override
-    public Component getName(Optional<Integer> quantity) {
+    public Component name(Optional<Integer> quantity) {
         return name
             .map(s -> {
                 s = s.replaceAll("\\$\\{quantity}", quantity.map(String::valueOf).orElse("${quantity}"));
@@ -65,7 +65,7 @@ public final class ItemPrize extends Prize<Integer> {
      * reference value is given, it replaces {@code ${quantity}}.
      */
     @Override
-    public List<Component> getLore(Optional<Integer> quantity) {
+    public List<Component> lore(Optional<Integer> quantity) {
         return lore.map(l -> l.stream().map(s -> {
             s = s.replaceAll("\\$\\{quantity}", quantity.map(String::valueOf).orElse("${quantity}"));
             return LegacyComponentSerializer.legacyAmpersand().deserialize(s).asComponent();
@@ -78,15 +78,15 @@ public final class ItemPrize extends Prize<Integer> {
      * name/lore.
      */
     @Override
-    public ItemStack getIcon(Optional<Integer> value) {
+    public ItemStack icon(Optional<Integer> value) {
         var base = icon.map(ItemStackSnapshot::createStack)
             .orElseGet(item::createStack);
         if (base.get(Keys.CUSTOM_NAME).isEmpty()) {
-            base.offer(Keys.CUSTOM_NAME, getName(value));
+            base.offer(Keys.CUSTOM_NAME, name(value));
         }
         //TODO: Replace with base.get(Keys.LORE).isAbsent(); see SpongePowered/Sponge#3512
         if (lore.isPresent() && !base.toContainer().contains(DataQuery.of("UnsafeData", "display", "Lore"))) {
-            base.offer(Keys.LORE, getLore(value));
+            base.offer(Keys.LORE, lore(value));
         }
         return base;
     }
@@ -100,7 +100,7 @@ public final class ItemPrize extends Prize<Integer> {
         if (result.type() == InventoryTransactionResult.Type.SUCCESS) {
             return true;
         } else {
-            CrateCrate.getContainer().logger().error("Failed to give item: " + result.type().name());
+            CrateCrate.container().logger().error("Failed to give item: " + result.type().name());
             return false;
         }
     }
@@ -108,7 +108,7 @@ public final class ItemPrize extends Prize<Integer> {
     private static final class ItemPrizeType extends Type<ItemPrize, Integer> {
 
         private ItemPrizeType() {
-            super("Item", CrateCrate.getContainer());
+            super("Item", CrateCrate.container());
         }
 
         /**

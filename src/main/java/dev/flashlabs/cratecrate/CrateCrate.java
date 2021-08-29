@@ -35,11 +35,11 @@ public final class CrateCrate {
 
     @Listener
     public void onConstruct(ConstructPluginEvent event) {
-        Crate.TYPES.put(Crate.TYPE.name, Crate.TYPE);
-        Reward.TYPES.put(Reward.TYPE.name, Reward.TYPE);
-        Prize.TYPES.put(CommandPrize.TYPE.name, CommandPrize.TYPE);
-        Prize.TYPES.put(ItemPrize.TYPE.name, ItemPrize.TYPE);
-        Key.TYPES.put(StandardKey.TYPE.name, StandardKey.TYPE);
+        Crate.TYPES.put(Crate.TYPE.name(), Crate.TYPE);
+        Reward.TYPES.put(Reward.TYPE.name(), Reward.TYPE);
+        Prize.TYPES.put(CommandPrize.TYPE.name(), CommandPrize.TYPE);
+        Prize.TYPES.put(ItemPrize.TYPE.name(), ItemPrize.TYPE);
+        Key.TYPES.put(StandardKey.TYPE.name(), StandardKey.TYPE);
     }
 
     @Listener
@@ -56,10 +56,10 @@ public final class CrateCrate {
 
     @Listener
     public void onRegisterCommands(RegisterCommandEvent<Command.Parameterized> event) {
-        event.register(CrateCrate.getContainer(), Base.COMMAND, "cratecrate", "crate");
+        event.register(CrateCrate.container(), Base.COMMAND, "cratecrate", "crate");
     }
 
-    public static PluginContainer getContainer() {
+    public static PluginContainer container() {
         return instance.container;
     }
 

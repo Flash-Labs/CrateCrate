@@ -14,7 +14,7 @@ import javax.sql.DataSource;
 public class Storage {
 
     private static final Path DIRECTORY = Sponge.configManager()
-        .pluginConfig(CrateCrate.getContainer())
+        .pluginConfig(CrateCrate.container())
         .directory()
         .resolve("storage");
     private static DataSource source;
@@ -35,11 +35,11 @@ public class Storage {
                     """).executeUpdate();
             }
         } catch (ClassNotFoundException | IOException | SQLException e) {
-            CrateCrate.getContainer().logger().error("Error loading storage: ", e);
+            CrateCrate.container().logger().error("Error loading storage: ", e);
         }
     }
 
-    public static int getKeyQuantity(User user, Key key) throws SQLException {
+    public static int queryKeyQuantity(User user, Key key) throws SQLException {
         try (var connection = source.getConnection()) {
             var statement = connection.prepareStatement("""
                 SELECT quantity
@@ -47,7 +47,7 @@ public class Storage {
                 WHERE uuid = ? AND key_id = ?
                 """);
             statement.setString(1, user.uniqueId().toString());
-            statement.setString(2, key.id);
+            statement.setString(2, key.id());
             var result = statement.executeQuery();
             return result.next() ? result.getInt(1) : 0;
         }
@@ -61,7 +61,7 @@ public class Storage {
                 ON DUPLICATE KEY UPDATE quantity = quantity + VALUES(quantity)
                 """);
             statement.setString(1, user.uniqueId().toString());
-            statement.setString(2, key.id);
+            statement.setString(2, key.id());
             statement.setInt(3, delta);
             statement.executeUpdate();
         }

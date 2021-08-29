@@ -50,7 +50,7 @@ public final class CommandPrize extends Prize<String> {
      * {@code '/'}. If a reference value is given, it replaces {@code ${value}}.
      */
     @Override
-    public Component getName(Optional<String> value) {
+    public Component name(Optional<String> value) {
         var base = name.orElseGet(() -> "/" + command);
         if (value.isPresent()) {
             base = base.replaceAll("\\$\\{value}", value.get());
@@ -63,7 +63,7 @@ public final class CommandPrize extends Prize<String> {
      * reference value is given, it replaces {@code ${value}}.
      */
     @Override
-    public List<Component> getLore(Optional<String> value) {
+    public List<Component> lore(Optional<String> value) {
         return lore.map(l -> l.stream().map(s -> {
             if (value.isPresent()) {
                 s = s.replaceAll("\\$\\{value}", value.get());
@@ -78,15 +78,15 @@ public final class CommandPrize extends Prize<String> {
      * name/lore.
      */
     @Override
-    public ItemStack getIcon(Optional<String> value) {
+    public ItemStack icon(Optional<String> value) {
         var base = icon.map(ItemStackSnapshot::createStack)
             .orElseGet(() -> ItemStack.of(ItemTypes.FILLED_MAP, 1));
         if (base.get(Keys.CUSTOM_NAME).isEmpty()) {
-            base.offer(Keys.CUSTOM_NAME, getName(value));
+            base.offer(Keys.CUSTOM_NAME, name(value));
         }
         //TODO: Replace with base.get(Keys.LORE).isAbsent(); see SpongePowered/Sponge#3512
         if (lore.isPresent() && !base.toContainer().contains(DataQuery.of("UnsafeData", "display", "Lore"))) {
-            base.offer(Keys.LORE, getLore(value));
+            base.offer(Keys.LORE, lore(value));
         }
         return base;
     }
@@ -97,7 +97,7 @@ public final class CommandPrize extends Prize<String> {
             Sponge.server().commandManager().process(command.replaceAll("\\$\\{value}", value));
             return true;
         } catch (CommandException e) {
-            CrateCrate.getContainer().logger().error("Error processing command: ", e);
+            CrateCrate.container().logger().error("Error processing command: ", e);
             return false;
         }
     }
@@ -105,7 +105,7 @@ public final class CommandPrize extends Prize<String> {
     private static final class CommandPrizeType extends Type<CommandPrize, String> {
 
         private CommandPrizeType() {
-            super("Command", CrateCrate.getContainer());
+            super("Command", CrateCrate.container());
         }
 
         /**

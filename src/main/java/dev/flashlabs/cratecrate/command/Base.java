@@ -28,7 +28,7 @@ public final class Base {
 
     public static CommandResult execute(CommandContext context) {
         var messages = List.of(
-            Component.text("CrateCrate v" + CrateCrate.getContainer().metadata().version()),
+            Component.text("CrateCrate v" + CrateCrate.container().metadata().version()),
             Component.text("GitHub: ").append(Component.text()
                 .content("https://github.com/flash-labs/CrateCrate")
                 .style(Style.style(ClickEvent.openUrl("https://github.com/flash-labs/CrateCrate")))

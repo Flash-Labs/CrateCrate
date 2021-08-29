@@ -47,7 +47,7 @@ public class StandardKey extends Key {
      * replaces {@code ${quantity}}.
      */
     @Override
-    public net.kyori.adventure.text.Component getName(Optional<Integer> quantity) {
+    public net.kyori.adventure.text.Component name(Optional<Integer> quantity) {
         return name.map(s -> {
             s = s.replaceAll("\\$\\{quantity}", quantity.map(String::valueOf).orElse("${quantity}"));
             return LegacyComponentSerializer.legacyAmpersand().deserialize(s);
@@ -58,7 +58,7 @@ public class StandardKey extends Key {
      * Returns the lore of this key, defaulting to an empty list.
      */
     @Override
-    public List<net.kyori.adventure.text.Component> getLore(Optional<Integer> quantity) {
+    public List<net.kyori.adventure.text.Component> lore(Optional<Integer> quantity) {
         return lore.map(l -> l.stream().map(s -> {
             s = s.replaceAll("\\$\\{quantity}", quantity.map(String::valueOf).orElse("${quantity}"));
             return LegacyComponentSerializer.legacyAmpersand().deserialize(s).asComponent();
@@ -71,32 +71,32 @@ public class StandardKey extends Key {
      * name/lore.
      */
     @Override
-    public ItemStack getIcon(Optional<Integer> quantity) {
+    public ItemStack icon(Optional<Integer> quantity) {
         var base = icon.map(ItemStackSnapshot::createStack)
             .orElseGet(() -> ItemStack.of(ItemTypes.TRIPWIRE_HOOK, 1));
         if (base.get(Keys.CUSTOM_NAME).isEmpty()) {
-            base.offer(Keys.CUSTOM_NAME, getName(quantity));
+            base.offer(Keys.CUSTOM_NAME, name(quantity));
         }
         //TODO: Replace with base.get(Keys.LORE).isAbsent(); see SpongePowered/Sponge#3512
         if (lore.isPresent() && !base.toContainer().contains(DataQuery.of("UnsafeData", "display", "Lore"))) {
-            base.offer(Keys.LORE, getLore(quantity));
+            base.offer(Keys.LORE, lore(quantity));
         }
         return base;
     }
 
     @Override
-    public Optional<Integer> get(User user) {
+    public Optional<Integer> quantity(User user) {
         try {
-            return Optional.of(Storage.getKeyQuantity(user, this));
+            return Optional.of(Storage.queryKeyQuantity(user, this));
         } catch (SQLException e) {
-            CrateCrate.getContainer().logger().error("Error getting key quantity.", e);
+            CrateCrate.container().logger().error("Error getting key quantity.", e);
             return Optional.empty();
         }
     }
 
     @Override
     public boolean check(User user, Integer value) {
-        return get(user).map(i -> i >= value).orElse(false);
+        return quantity(user).map(i -> i >= value).orElse(false);
     }
 
     @Override
@@ -114,7 +114,7 @@ public class StandardKey extends Key {
             Storage.updateKeyQuantity(user, this, delta);
             return true;
         } catch (SQLException e) {
-            CrateCrate.getContainer().logger().error("Error getting key quantity.", e);
+            CrateCrate.container().logger().error("Error getting key quantity.", e);
             return false;
         }
     }
@@ -122,7 +122,7 @@ public class StandardKey extends Key {
     private static final class StandardKeyType extends Type<StandardKey, Integer> {
 
         private StandardKeyType() {
-            super("Standard", CrateCrate.getContainer());
+            super("Standard", CrateCrate.container());
         }
 
         @Override

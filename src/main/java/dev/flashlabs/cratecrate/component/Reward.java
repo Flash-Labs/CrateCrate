@@ -53,12 +53,12 @@ public final class Reward extends Component<Integer> {
      * {@code ${weight}}.
      */
     @Override
-    public net.kyori.adventure.text.Component getName(Optional<Integer> weight) {
+    public net.kyori.adventure.text.Component name(Optional<Integer> weight) {
         if (name.isPresent()) {
             var replaced = name.get().replaceAll("\\$\\{value}", weight.map(String::valueOf).orElse("${value}"));
             return LegacyComponentSerializer.legacyAmpersand().deserialize(replaced);
         } else if (prizes.size() == 1) {
-            return prizes.get(0).first().getName(Optional.of(prizes.get(0).second()));
+            return prizes.get(0).first().name(Optional.of(prizes.get(0).second()));
         } else {
             return net.kyori.adventure.text.Component.text(id);
         }
@@ -71,16 +71,16 @@ public final class Reward extends Component<Integer> {
      * {@code ${weight}}.
      */
     @Override
-    public List<net.kyori.adventure.text.Component> getLore(Optional<Integer> weight) {
+    public List<net.kyori.adventure.text.Component> lore(Optional<Integer> weight) {
         if (lore.isPresent()) {
             return lore.get().stream().map(s -> {
                 s = s.replaceAll("\\$\\{value}", weight.map(String::valueOf).orElse("${value}"));
                 return LegacyComponentSerializer.legacyAmpersand().deserialize(s).asComponent();
             }).toList();
         } else if (prizes.size() == 1) {
-            return prizes.get(0).first().getLore(Optional.of(prizes.get(0).second()));
+            return prizes.get(0).first().lore(Optional.of(prizes.get(0).second()));
         } else {
-            return prizes.stream().map(p -> p.first().getName(Optional.of(p.second()))).toList();
+            return prizes.stream().map(p -> p.first().name(Optional.of(p.second()))).toList();
         }
     }
 
@@ -91,25 +91,25 @@ public final class Reward extends Component<Integer> {
      * set to this reward's name/lore.
      */
     @Override
-    public ItemStack getIcon(Optional<Integer> weight) {
+    public ItemStack icon(Optional<Integer> weight) {
         var base = icon.map(ItemStackSnapshot::createStack).orElseGet(() -> {
             if (prizes.size() == 1) {
-                return prizes.get(0).first().getIcon(Optional.of(prizes.get(0).second()));
+                return prizes.get(0).first().icon(Optional.of(prizes.get(0).second()));
             } else {
                 return ItemStack.of(ItemTypes.BOOK, 1);
             }
         });
         if (base.get(Keys.CUSTOM_NAME).isEmpty()) {
-            base.offer(Keys.CUSTOM_NAME, getName(weight));
+            base.offer(Keys.CUSTOM_NAME, name(weight));
         }
         //TODO: Replace with base.get(Keys.LORE).isAbsent(); see SpongePowered/Sponge#3512
         if (!base.toContainer().contains(DataQuery.of("UnsafeData", "display", "Lore"))) {
-            base.offer(Keys.LORE, getLore(weight));
+            base.offer(Keys.LORE, lore(weight));
         }
         return base;
     }
 
-    public ImmutableList<Tuple<? extends Prize, ?>> getPrizes() {
+    public ImmutableList<Tuple<? extends Prize, ?>> prizes() {
         return prizes;
     }
 
@@ -120,7 +120,7 @@ public final class Reward extends Component<Integer> {
     public static final class RewardType extends Type<Reward, Integer> {
 
         public RewardType() {
-            super("Reward", CrateCrate.getContainer());
+            super("Reward", CrateCrate.container());
         }
 
         @Override

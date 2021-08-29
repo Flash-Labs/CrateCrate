@@ -3,7 +3,6 @@ package dev.flashlabs.cratecrate.command.key;
 import dev.flashlabs.cratecrate.component.key.Key;
 import dev.flashlabs.cratecrate.internal.Config;
 import net.kyori.adventure.identity.Identity;
-import net.kyori.adventure.text.Component;
 import org.spongepowered.api.command.Command;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.parameter.CommandContext;
@@ -24,7 +23,7 @@ public final class Balance {
     public static CommandResult execute(CommandContext context) {
         var player = context.requireOne(Parameter.key("user", ServerPlayer.class));
         var key = context.requireOne(Parameter.key("key", Key.class));
-        context.sendMessage(Identity.nil(), key.getName(Optional.of(key.get(player.user()).orElse(0))));
+        context.sendMessage(Identity.nil(), key.name(Optional.of(key.quantity(player.user()).orElse(0))));
         return CommandResult.success();
     }
 
