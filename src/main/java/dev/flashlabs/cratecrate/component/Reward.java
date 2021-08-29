@@ -135,7 +135,7 @@ public final class Reward extends Component<Integer> {
          * Reward:
          *     name: Optional<String>
          *     lore: Optional<List<String>>
-         *     icon: Optional<ItemType>
+         *     icon: Optional<ItemStack>
          *     prizes: List<PrizeReference>
          * }</pre>
          */
@@ -163,7 +163,7 @@ public final class Reward extends Component<Integer> {
         }
 
         /**
-         * Deserialize a reward reference, defined as:
+         * Deserializes a reward reference, defined as:
          *
          * <pre>{@code
          * RewardReference:

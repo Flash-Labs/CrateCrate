@@ -130,6 +130,16 @@ public class StandardKey extends Key {
             return true;
         }
 
+        /**
+         * Deserializes a standard key, defined as:
+         *
+         * <pre>{@code
+         * StandardKey:
+         *     name: Optional<String>
+         *     lore: Optional<List<String>>
+         *     icon: Optional<ItemStack>
+         * }</pre>
+         */
         @Override
         public StandardKey deserializeComponent(ConfigurationNode node) throws SerializationException {
             var name = Optional.ofNullable(node.node("name").get(String.class));
@@ -147,6 +157,19 @@ public class StandardKey extends Key {
             throw new UnsupportedOperationException(); //TODO
         }
 
+        /**
+         * Deserializes a standard key reference, defined as:
+         *
+         * <pre>{@code
+         * StandardKeyReference:
+         *     node:
+         *        StandardKey |
+         *        String (StandardKey id or any string)
+         *     values: [
+         *        Optional<Integer> (defaults to 1)
+         *     ]
+         * }</pre>
+         */
         @Override
         public Tuple<StandardKey, Integer> deserializeReference(ConfigurationNode node, List<? extends ConfigurationNode> values) throws SerializationException {
             StandardKey key;

@@ -122,7 +122,7 @@ public final class CommandPrize extends Prize<String> {
          * CommandPrize:
          *     name: Optional<String>
          *     lore: Optional<List<String>>
-         *     icon: Optional<ItemType>
+         *     icon: Optional<ItemStack>
          *     command: String (prefixed with '/')
          * }</pre>
          */
@@ -147,7 +147,7 @@ public final class CommandPrize extends Prize<String> {
         }
 
         /**
-         * Deserialize a command prize reference, defined as:
+         * Deserializes a command prize reference, defined as:
          *
          * <pre>{@code
          * CommandPrizeReference:

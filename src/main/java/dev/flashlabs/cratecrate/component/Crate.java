@@ -136,6 +136,18 @@ public final class Crate extends Component<Void> {
             return true;
         }
 
+        /**
+         * Deserializes a crate, defined as:
+         *
+         * <pre>{@code
+         * Reward:
+         *     name: Optional<String>
+         *     lore: Optional<List<String>>
+         *     icon: Optional<ItemStack>
+         *     keys: List<KeyReference>
+         *     rewards: List<RewardReference>
+         * }</pre>
+         */
         @Override
         public Crate deserializeComponent(ConfigurationNode node) throws SerializationException {
             var name = Optional.ofNullable(node.node("name").get(String.class));

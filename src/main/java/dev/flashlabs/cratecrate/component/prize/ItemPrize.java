@@ -112,8 +112,8 @@ public final class ItemPrize extends Prize<Integer> {
         }
 
         /**
-         * Matches nodes having a {@code command} child or with a string value
-         * prefixed with {@code '/'}.
+         * Matches nodes having a {@code item} child or identifying an item
+         * type.
          */
         @Override
         public boolean matches(ConfigurationNode node) {
@@ -130,13 +130,13 @@ public final class ItemPrize extends Prize<Integer> {
         }
 
         /**
-         * Deserializes a command prize, defined as:
+         * Deserializes an item prize, defined as:
          *
          * <pre>{@code
          * CommandPrize:
          *     name: Optional<String>
          *     lore: Optional<List<String>>
-         *     icon: Optional<ItemType>
+         *     icon: Optional<ItemStack>
          *     item: ItemStack
          * }</pre>
          */
@@ -159,15 +159,15 @@ public final class ItemPrize extends Prize<Integer> {
         }
 
         /**
-         * Deserialize a command prize reference, defined as:
+         * Deserializes an item prize reference, defined as:
          *
          * <pre>{@code
-         * CommandPrizeReference:
+         * ItemPrizeReference:
          *     node:
          *        ItemPrize |
          *        String (ItemPrize id or ItemType)
          *     values: [
-         *        Optional<Integer>
+         *        Optional<Integer> (defaults to 1)
          *     ]
          * }</pre>
          */
