@@ -10,7 +10,9 @@ import dev.flashlabs.cratecrate.component.prize.CommandPrize;
 import dev.flashlabs.cratecrate.component.prize.ItemPrize;
 import dev.flashlabs.cratecrate.component.prize.Prize;
 import dev.flashlabs.cratecrate.internal.Config;
+import dev.flashlabs.cratecrate.internal.Listeners;
 import dev.flashlabs.cratecrate.internal.Storage;
+import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.Command;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.lifecycle.ConstructPluginEvent;
@@ -45,6 +47,7 @@ public final class CrateCrate {
         Prize.TYPES.put(ItemPrize.class.getName(), ItemPrize.TYPE);
         Key.TYPES.put(StandardKey.TYPE.name(), StandardKey.TYPE);
         Key.TYPES.put(StandardKey.class.getName(), StandardKey.TYPE);
+        Sponge.eventManager().registerListeners(container, new Listeners());
     }
 
     @Listener
