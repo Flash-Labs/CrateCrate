@@ -36,10 +36,15 @@ public final class CrateCrate {
     @Listener
     public void onConstruct(ConstructPluginEvent event) {
         Crate.TYPES.put(Crate.TYPE.name(), Crate.TYPE);
+        Crate.TYPES.put(Crate.class.getName(), Crate.TYPE);
         Reward.TYPES.put(Reward.TYPE.name(), Reward.TYPE);
+        Reward.TYPES.put(Reward.class.getName(), Reward.TYPE);
         Prize.TYPES.put(CommandPrize.TYPE.name(), CommandPrize.TYPE);
+        Prize.TYPES.put(CommandPrize.class.getName(), CommandPrize.TYPE);
         Prize.TYPES.put(ItemPrize.TYPE.name(), ItemPrize.TYPE);
+        Prize.TYPES.put(ItemPrize.class.getName(), ItemPrize.TYPE);
         Key.TYPES.put(StandardKey.TYPE.name(), StandardKey.TYPE);
+        Key.TYPES.put(StandardKey.class.getName(), StandardKey.TYPE);
     }
 
     @Listener

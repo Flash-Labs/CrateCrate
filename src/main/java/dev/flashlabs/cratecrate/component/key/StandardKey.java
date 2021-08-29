@@ -160,6 +160,7 @@ public class StandardKey extends Key {
                     key = (StandardKey) Config.KEYS.get(identifier);
                 } else {
                     key = new StandardKey(identifier, Optional.empty(), Optional.empty(), Optional.empty());
+                    Config.KEYS.put(key.id, key);
                 }
             }
             int quantity = (!values.isEmpty() ? values.get(0) : node.node("quantity")).getInt(1);

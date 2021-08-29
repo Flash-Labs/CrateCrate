@@ -177,6 +177,7 @@ public final class ItemPrize extends Prize<Integer> {
             if (node.isMap()) {
                 prize = deserializeComponent(node);
                 prize = new ItemPrize("ItemPrize@" + node.path(), prize.name, prize.lore, prize.icon, prize.item);
+                Config.PRIZES.put(prize.id, prize);
             } else {
                 var identifier = Optional.ofNullable(node.getString()).orElse("");
                 if (Config.PRIZES.containsKey(identifier)) {

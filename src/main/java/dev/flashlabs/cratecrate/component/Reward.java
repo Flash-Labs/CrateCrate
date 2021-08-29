@@ -185,16 +185,16 @@ public final class Reward extends Component<Integer> {
                     reward = deserializeComponent(node);
                     reward = new Reward("Reward@" + node.path(), reward.name, reward.lore, reward.icon, reward.prizes);
                 } else {
-                    var prize = Config.resolvePrizeType(node).deserializeReference(node, values.subList(values.isEmpty() ? 0 : 1, values.size()));
+                    var prize = Config.resolvePrizeType(node).deserializeReference(node, values.subList(0, values.isEmpty() ? 0 : values.size() - 1));
                     reward = new Reward("Reward@" + node.path(), Optional.empty(), Optional.empty(), Optional.empty(), ImmutableList.of(prize));
-                    Config.REWARDS.put(reward.id, reward);
                 }
+                Config.REWARDS.put(reward.id, reward);
             } else {
                 var identifier = Optional.ofNullable(node.getString()).orElse("");
                 if (Config.REWARDS.containsKey(identifier)) {
                     reward = Config.REWARDS.get(identifier);
                 } else {
-                    var prize = Config.resolvePrizeType(node).deserializeReference(node, values.subList(values.isEmpty() ? 0 : 1, values.size()));
+                    var prize = Config.resolvePrizeType(node).deserializeReference(node, values.subList(0, values.isEmpty() ? 0 : values.size() - 1));
                     reward = new Reward(identifier, Optional.empty(), Optional.empty(), Optional.empty(), ImmutableList.of(prize));
                     Config.REWARDS.put(reward.id, reward);
                 }

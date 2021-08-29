@@ -17,6 +17,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 public class Config {
 
@@ -66,26 +67,31 @@ public class Config {
     }
 
     public static Type<? extends Crate, Void> resolveCrateType(ConfigurationNode node) throws SerializationException {
-        return (Type<? extends Crate, Void>) Config.<Crate>resolveType(node, Crate.class, Crate.TYPES);
+        return (Type<? extends Crate, Void>) Config.<Crate>resolveType(node, Crate.class, Crate.TYPES, CRATES);
     }
 
     public static Type<? extends Reward, Integer> resolveRewardType(ConfigurationNode node) throws SerializationException {
-        return (Type<? extends Reward, Integer>) Config.<Reward>resolveType(node, Reward.class, Reward.TYPES);
+        return (Type<? extends Reward, Integer>) Config.<Reward>resolveType(node, Reward.class, Reward.TYPES, REWARDS);
     }
 
     public static Type<? extends Prize, ?> resolvePrizeType(ConfigurationNode node) throws SerializationException {
-        return Config.<Prize>resolveType(node, Prize.class, Prize.TYPES);
+        return Config.<Prize>resolveType(node, Prize.class, Prize.TYPES, PRIZES);
     }
 
     public static Type<? extends Key, Integer> resolveKeyType(ConfigurationNode node) throws SerializationException {
-        return (Type<? extends Key, Integer>) Config.<Key>resolveType(node, Key.class, Key.TYPES);
+        return (Type<? extends Key, Integer>) Config.<Key>resolveType(node, Key.class, Key.TYPES, KEYS);
     }
 
     private static <T extends Component> Type<? extends T, ?> resolveType(
         ConfigurationNode node,
         Class<T> component,
-        Map<String, Type<? extends T, ?>> types
+        Map<String, Type<? extends T, ?>> types,
+        Map<String, T> registry
     ) throws SerializationException {
+        var identifier = Optional.ofNullable(node.getString()).orElse("");
+        if (registry.containsKey(identifier)) {
+            return types.get(registry.get(identifier).getClass().getName());
+        }
         if (node.hasChild("type")) {
             var type = node.node("type").getString();
             if (!types.containsKey(type)) {

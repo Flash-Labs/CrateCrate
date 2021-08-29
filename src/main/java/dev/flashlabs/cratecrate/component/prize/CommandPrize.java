@@ -165,6 +165,7 @@ public final class CommandPrize extends Prize<String> {
             if (node.isMap()) {
                 prize = deserializeComponent(node);
                 prize = new CommandPrize("CommandPrize@" + node.path(), prize.name, prize.lore, prize.icon, prize.command);
+                Config.PRIZES.put(prize.id, prize);
             } else {
                 var identifier = Optional.ofNullable(node.getString()).orElse("");
                 if (Config.PRIZES.containsKey(identifier)) {
