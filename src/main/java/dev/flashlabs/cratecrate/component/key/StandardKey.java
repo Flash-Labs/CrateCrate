@@ -59,10 +59,10 @@ public class StandardKey extends Key {
      */
     @Override
     public List<net.kyori.adventure.text.Component> lore(Optional<Integer> quantity) {
-        return lore.map(l -> l.stream().map(s -> {
+        return lore.orElseGet(ImmutableList::of).stream().map(s -> {
             s = s.replaceAll("\\$\\{quantity}", quantity.map(String::valueOf).orElse("${quantity}"));
             return LegacyComponentSerializer.legacyAmpersand().deserialize(s).asComponent();
-        }).toList()).orElseGet(List::of);
+        }).toList();
     }
 
     /**

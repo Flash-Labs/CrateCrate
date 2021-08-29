@@ -58,7 +58,8 @@ public final class Crate extends Component<Void> {
      */
     @Override
     public net.kyori.adventure.text.Component name(Optional<Void> ignored) {
-        return name.map(s -> LegacyComponentSerializer.legacyAmpersand().deserialize(s))
+        return name
+            .map(s -> LegacyComponentSerializer.legacyAmpersand().deserialize(s))
             .orElseGet(() -> net.kyori.adventure.text.Component.text(id));
     }
 
@@ -67,11 +68,9 @@ public final class Crate extends Component<Void> {
      */
     @Override
     public List<net.kyori.adventure.text.Component> lore(Optional<Void> ignored) {
-        return lore
-            .map(l -> l.stream()
-                .map(s -> LegacyComponentSerializer.legacyAmpersand().deserialize(s).asComponent())
-                .toList())
-            .orElseGet(List::of);
+        return lore.orElseGet(ImmutableList::of).stream()
+            .map(s -> LegacyComponentSerializer.legacyAmpersand().deserialize(s).asComponent())
+            .toList();
     }
 
     /**

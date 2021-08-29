@@ -52,9 +52,7 @@ public final class CommandPrize extends Prize<String> {
     @Override
     public Component name(Optional<String> value) {
         var base = name.orElseGet(() -> "/" + command);
-        if (value.isPresent()) {
-            base = base.replaceAll("\\$\\{value}", value.get());
-        }
+        base = base.replaceAll("\\$\\{value}", value.orElse("${value}"));
         return LegacyComponentSerializer.legacyAmpersand().deserialize(base);
     }
 
@@ -64,12 +62,10 @@ public final class CommandPrize extends Prize<String> {
      */
     @Override
     public List<Component> lore(Optional<String> value) {
-        return lore.map(l -> l.stream().map(s -> {
-            if (value.isPresent()) {
-                s = s.replaceAll("\\$\\{value}", value.get());
-            }
+        return lore.orElseGet(ImmutableList::of).stream().map(s -> {
+            s = s.replaceAll("\\$\\{value}", value.orElse("${value}"));
             return LegacyComponentSerializer.legacyAmpersand().deserialize(s).asComponent();
-        }).toList()).orElseGet(List::of);
+        }).toList();
     }
 
     /**
