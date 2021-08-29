@@ -2,13 +2,12 @@ package dev.flashlabs.cratecrate.command.crate;
 
 import dev.flashlabs.cratecrate.component.Crate;
 import dev.flashlabs.cratecrate.internal.Config;
-import io.leangen.geantyref.TypeToken;
 import org.spongepowered.api.command.Command;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.parameter.CommandContext;
 import org.spongepowered.api.command.parameter.Parameter;
 import org.spongepowered.api.entity.living.player.server.ServerPlayer;
-import org.spongepowered.api.world.Location;
+import org.spongepowered.api.world.server.ServerLocation;
 
 public final class Open {
 
@@ -23,8 +22,8 @@ public final class Open {
     public static CommandResult execute(CommandContext context) {
         var player = context.requireOne(Parameter.key("player", ServerPlayer.class));
         var crate = context.requireOne(Parameter.key("crate", Crate.class));
-        var location = context.one(Parameter.key("location", TypeToken.get(Location.class)));
-        crate.open(player, location.orElseGet(player::location));
+        var location = context.one(Parameter.key("location", ServerLocation.class));
+        crate.open(player, location.orElseGet(player::serverLocation));
         return CommandResult.success();
     }
 

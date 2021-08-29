@@ -6,8 +6,7 @@ import dev.flashlabs.cratecrate.component.key.Key;
 import org.spongepowered.api.ResourceKey;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.User;
-import org.spongepowered.api.world.Location;
-import org.spongepowered.api.world.server.ServerWorld;
+import org.spongepowered.api.world.server.ServerLocation;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -19,7 +18,7 @@ import javax.sql.DataSource;
 
 public class Storage {
 
-    public static final Map<Location<ServerWorld, ?>, Crate> LOCATIONS = new HashMap<>();
+    public static final Map<ServerLocation, Crate> LOCATIONS = new HashMap<>();
 
     private static final Path DIRECTORY = Sponge.configManager()
         .pluginConfig(CrateCrate.container())
@@ -96,7 +95,7 @@ public class Storage {
         }
     }
 
-    public static void setLocation(Location<ServerWorld, ?> location, Crate crate) throws SQLException {
+    public static void setLocation(ServerLocation location, Crate crate) throws SQLException {
         try (var connection = source.getConnection()) {
             var statement = connection.prepareStatement("""
                 INSERT INTO Locations (world_key, block_x, block_y, block_z, crate_id)
@@ -112,7 +111,7 @@ public class Storage {
         }
     }
 
-    public static void deleteLocation(Location<ServerWorld, ?> location) throws SQLException {
+    public static void deleteLocation(ServerLocation location) throws SQLException {
         try (var connection = source.getConnection()) {
             var statement = connection.prepareStatement("""
                 DELETE FROM Locations

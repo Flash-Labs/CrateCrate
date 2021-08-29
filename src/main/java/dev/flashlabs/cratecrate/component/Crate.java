@@ -14,7 +14,7 @@ import org.spongepowered.api.item.ItemTypes;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.item.inventory.ItemStackSnapshot;
 import org.spongepowered.api.util.Tuple;
-import org.spongepowered.api.world.Location;
+import org.spongepowered.api.world.server.ServerLocation;
 import org.spongepowered.configurate.ConfigurationNode;
 import org.spongepowered.configurate.serialize.SerializationException;
 
@@ -100,11 +100,11 @@ public final class Crate extends Component<Void> {
         return rewards;
     }
 
-    public void open(ServerPlayer player, Location<?, ?> location) {
+    public void open(ServerPlayer player, ServerLocation location) {
         give(player, location, roll(player));
     }
 
-    public void give(ServerPlayer player, Location<?, ?> location, Tuple<? extends Reward, Integer> reward) {
+    public void give(ServerPlayer player, ServerLocation location, Tuple<? extends Reward, Integer> reward) {
         reward.first().give(player.user());
     }
 
