@@ -15,13 +15,13 @@ public final class Balance {
 
     public static Command.Parameterized COMMAND = Command.builder()
         .permission("cratecrate.command.key.balance.base")
-        .addParameter(Parameter.user().key("user").build())
+        .addParameter(Parameter.player().key("player").build())
         .addParameter(Parameter.choices(Key.class, Config.KEYS::get, Config.KEYS::keySet).key("key").build())
         .executor(Balance::execute)
         .build();
 
     public static CommandResult execute(CommandContext context) {
-        var player = context.requireOne(Parameter.key("user", ServerPlayer.class));
+        var player = context.requireOne(Parameter.key("player", ServerPlayer.class));
         var key = context.requireOne(Parameter.key("key", Key.class));
         context.sendMessage(Identity.nil(), key.name(Optional.of(key.quantity(player.user()).orElse(0))));
         return CommandResult.success();
