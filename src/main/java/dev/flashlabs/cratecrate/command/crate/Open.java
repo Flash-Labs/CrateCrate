@@ -19,7 +19,7 @@ public final class Open {
         .executor(Open::execute)
         .build();
 
-    public static CommandResult execute(CommandContext context) {
+    private static CommandResult execute(CommandContext context) {
         var player = context.requireOne(Parameter.key("player", ServerPlayer.class));
         var crate = context.requireOne(Parameter.key("crate", Crate.class));
         var location = context.one(Parameter.key("location", ServerLocation.class));

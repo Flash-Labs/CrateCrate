@@ -31,7 +31,7 @@ public final class ItemPrize extends Prize<Integer> {
     private final Optional<ItemStackSnapshot> icon;
     private final ItemStackSnapshot item;
 
-    public ItemPrize(
+    private ItemPrize(
         String id,
         Optional<String> name,
         Optional<ImmutableList<String>> lore,

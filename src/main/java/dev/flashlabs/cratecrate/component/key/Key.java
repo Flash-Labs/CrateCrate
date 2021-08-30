@@ -12,7 +12,7 @@ public abstract class Key extends Component<Integer> {
 
     public static final Map<String, Type<? extends Key, ?>> TYPES = new HashMap<>();
 
-    public Key(String id) {
+    protected Key(String id) {
         super(id);
     }
 

@@ -21,15 +21,15 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
-public class StandardKey extends Key {
+public final class StandardKey extends Key {
 
-    public static Type<StandardKey, Integer> TYPE = new StandardKeyType();
+    public static final Type<StandardKey, Integer> TYPE = new StandardKeyType();
 
     private final Optional<String> name;
     private final Optional<ImmutableList<String>> lore;
     private final Optional<ItemStackSnapshot> icon;
 
-    public StandardKey(
+    private StandardKey(
         String id,
         Optional<String> name,
         Optional<ImmutableList<String>> lore,

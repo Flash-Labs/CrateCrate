@@ -17,7 +17,7 @@ public final class Give {
         .executor(Give::execute)
         .build();
 
-    public static CommandResult execute(CommandContext context) {
+    private static CommandResult execute(CommandContext context) {
         var player = context.requireOne(Parameter.key("player", ServerPlayer.class));
         var reward = context.requireOne(Parameter.key("reward", Reward.class));
         reward.give(player.user());

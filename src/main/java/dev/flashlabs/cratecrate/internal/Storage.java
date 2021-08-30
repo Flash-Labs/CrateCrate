@@ -16,7 +16,7 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.sql.DataSource;
 
-public class Storage {
+public final class Storage {
 
     public static final Map<ServerLocation, Crate> LOCATIONS = new HashMap<>();
 

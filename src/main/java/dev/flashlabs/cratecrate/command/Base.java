@@ -28,7 +28,7 @@ public final class Base {
         .executor(Base::execute)
         .build();
 
-    public static CommandResult execute(CommandContext context) {
+    private static CommandResult execute(CommandContext context) {
         var messages = List.of(
             Component.text("CrateCrate v" + CrateCrate.container().metadata().version()),
             Component.text("GitHub: ").append(Component.text()

@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class Serializers {
+public final class Serializers {
 
     public interface Serializer<T> {
 

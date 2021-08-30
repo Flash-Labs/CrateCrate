@@ -23,7 +23,7 @@ public final class Set {
         .executor(Set::execute)
         .build();
 
-    public static CommandResult execute(CommandContext context) throws CommandException {
+    private static CommandResult execute(CommandContext context) throws CommandException {
         var location = context.requireOne(Parameter.key("location", ServerLocation.class));
         var crate = context.requireOne(Parameter.key("crate", TypeToken.get(Crate.class)));
         location = location.withBlockPosition(location.blockPosition());

@@ -20,7 +20,7 @@ public final class Balance {
         .executor(Balance::execute)
         .build();
 
-    public static CommandResult execute(CommandContext context) {
+    private static CommandResult execute(CommandContext context) {
         var player = context.requireOne(Parameter.key("player", ServerPlayer.class));
         var key = context.requireOne(Parameter.key("key", Key.class));
         context.sendMessage(Identity.nil(), key.name(Optional.of(key.quantity(player.user()).orElse(0))));

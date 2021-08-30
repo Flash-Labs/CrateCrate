@@ -31,7 +31,7 @@ public final class CommandPrize extends Prize<String> {
     private final Optional<ItemStackSnapshot> icon;
     private final String command;
 
-    public CommandPrize(
+    private CommandPrize(
         String id,
         Optional<String> name,
         Optional<ImmutableList<String>> lore,

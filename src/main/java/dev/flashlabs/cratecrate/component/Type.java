@@ -12,7 +12,7 @@ public abstract class Type<T extends Component<V>, V> {
     private final String name;
     private final PluginContainer container;
 
-    public Type(String name, PluginContainer container) {
+    protected Type(String name, PluginContainer container) {
         this.name = name;
         this.container = container;
     }

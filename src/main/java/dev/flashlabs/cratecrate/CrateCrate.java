@@ -30,7 +30,7 @@ public final class CrateCrate {
     private final PluginContainer container;
 
     @Inject
-    public CrateCrate(PluginContainer container) {
+    private CrateCrate(PluginContainer container) {
         instance = this;
         this.container = container;
     }

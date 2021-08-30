@@ -19,7 +19,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-public class Config {
+public final class Config {
 
     public static final Map<String, Crate> CRATES = new HashMap<>();
     public static final Map<String, Reward> REWARDS = new HashMap<>();

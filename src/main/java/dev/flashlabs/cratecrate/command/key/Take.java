@@ -18,7 +18,7 @@ public final class Take {
         .executor(Take::execute)
         .build();
 
-    public static CommandResult execute(CommandContext context) {
+    private static CommandResult execute(CommandContext context) {
         var player = context.requireOne(Parameter.key("player", ServerPlayer.class));
         var key = context.requireOne(Parameter.key("key", Key.class));
         var value = context.requireOne(Parameter.key("quantity", Integer.class));

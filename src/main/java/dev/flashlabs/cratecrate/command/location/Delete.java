@@ -19,7 +19,7 @@ public final class Delete {
         .executor(Delete::execute)
         .build();
 
-    public static CommandResult execute(CommandContext context) throws CommandException {
+    private static CommandResult execute(CommandContext context) throws CommandException {
         var location = context.requireOne(Parameter.key("location", ServerLocation.class));
         location = location.withBlockPosition(location.blockPosition());
         try {

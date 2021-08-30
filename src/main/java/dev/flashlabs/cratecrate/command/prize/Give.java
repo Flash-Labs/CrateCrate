@@ -21,7 +21,7 @@ public final class Give {
         .executor(Give::execute)
         .build();
 
-    public static CommandResult execute(CommandContext context) {
+    private static CommandResult execute(CommandContext context) {
         var player = context.requireOne(Parameter.key("player", ServerPlayer.class));
         var prize = context.requireOne(Parameter.key("prize", TypeToken.get(Prize.class)));
         var value = context.one(Parameter.key("value", String.class));

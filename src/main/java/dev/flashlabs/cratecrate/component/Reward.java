@@ -32,7 +32,7 @@ public final class Reward extends Component<Integer> {
     private final Optional<ItemStackSnapshot> icon;
     private final ImmutableList<Tuple<? extends Prize, ?>> prizes;
 
-    public Reward(
+    private Reward(
         String id,
         Optional<String> name,
         Optional<ImmutableList<String>> lore,
