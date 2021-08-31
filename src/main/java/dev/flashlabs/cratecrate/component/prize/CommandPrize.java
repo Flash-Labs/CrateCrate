@@ -25,23 +25,33 @@ public final class CommandPrize extends Prize<String> {
 
     public static final Type<CommandPrize, String> TYPE = new CommandPrizeType();
 
+    private enum Source {
+        SERVER, PLAYER
+    }
+
     private final Optional<String> name;
     private final Optional<ImmutableList<String>> lore;
     private final Optional<ItemStackSnapshot> icon;
     private final String command;
+    private final Optional<Source> source;
+    private final Optional<Boolean> online;
 
     private CommandPrize(
         String id,
         Optional<String> name,
         Optional<ImmutableList<String>> lore,
         Optional<ItemStackSnapshot> icon,
-        String command
+        String command,
+        Optional<Source> source,
+        Optional<Boolean> online
     ) {
         super(id);
         this.name = name;
         this.lore = lore;
         this.icon = icon;
         this.command = command;
+        this.source = source;
+        this.online = online;
     }
 
     /**
@@ -87,8 +97,18 @@ public final class CommandPrize extends Prize<String> {
 
     @Override
     public boolean give(User user, String value) {
-        try {
-            Sponge.server().commandManager().process(command.replaceAll("\\$\\{value}", value));
+        try (var frame = Sponge.server().causeStackManager().pushCauseFrame()) {
+            var command = this.command.replaceAll("\\$\\{value}", value);
+            if (online.orElse(false) || source.map(s -> s == Source.PLAYER).orElse(false)) {
+                var player = user.player().orElseThrow(() -> new CommandException(Component.text("User must be online.")));
+                frame.pushCause(source.map(s -> s == Source.PLAYER).orElse(false) ? player : Sponge.systemSubject());
+                command = command.replaceAll("\\$\\{player}", player.name());
+            } else {
+                frame.pushCause(Sponge.systemSubject());
+                command = command.replaceAll("\\$\\{user}", user.name());
+            }
+            System.out.println(command);
+            Sponge.server().commandManager().process(command);
             return true;
         } catch (CommandException e) {
             CrateCrate.container().logger().error("Error processing command: ", e);
@@ -121,7 +141,10 @@ public final class CommandPrize extends Prize<String> {
          *     name: Optional<String>
          *     lore: Optional<List<String>>
          *     icon: Optional<ItemStack>
-         *     command: String (prefixed with '/')
+         *     command: String (prefixed with '/') | Object
+         *         command: String (prefixed with '/')
+         *         source: Optional<Source>
+         *         online: Optional<Boolean>
          * }</pre>
          */
         @Override
@@ -134,9 +157,14 @@ public final class CommandPrize extends Prize<String> {
                 ? Optional.of(Serializers.ITEM_STACK.deserialize(node.node("icon")).createSnapshot())
                 : Optional.<ItemStackSnapshot>empty();
             var command = Optional.ofNullable(node.node("command").getString())
+                .or(() -> Optional.ofNullable(node.node("command", "command").getString()))
                 .map(s -> s.substring(1))
                 .orElse("");
-            return new CommandPrize(String.valueOf(node.key()), name, lore, icon, command);
+            var source = Optional.ofNullable(node.node("command", "source").getString())
+                .map(s -> Source.valueOf(s.toUpperCase()));
+            var online = Optional.ofNullable(node.node("command", "online").getString())
+                .map(Boolean::parseBoolean);
+            return new CommandPrize(String.valueOf(node.key()), name, lore, icon, command, source, online);
         }
 
         @Override
@@ -162,14 +190,14 @@ public final class CommandPrize extends Prize<String> {
             CommandPrize prize;
             if (node.isMap()) {
                 prize = deserializeComponent(node);
-                prize = new CommandPrize("CommandPrize@" + node.path(), prize.name, prize.lore, prize.icon, prize.command);
+                prize = new CommandPrize("CommandPrize@" + node.path(), prize.name, prize.lore, prize.icon, prize.command, prize.source, prize.online);
                 Config.PRIZES.put(prize.id, prize);
             } else {
                 var identifier = Optional.ofNullable(node.getString()).orElse("");
                 if (Config.PRIZES.containsKey(identifier)) {
                     prize = (CommandPrize) Config.PRIZES.get(identifier);
                 } else if (identifier.startsWith("/")) {
-                    prize = new CommandPrize(identifier, Optional.empty(), Optional.empty(), Optional.empty(), identifier.substring(1));
+                    prize = new CommandPrize(identifier, Optional.empty(), Optional.empty(), Optional.empty(), identifier.substring(1), Optional.empty(), Optional.empty());
                     Config.PRIZES.put(prize.id, prize);
                 } else {
                     throw new AssertionError(identifier);
