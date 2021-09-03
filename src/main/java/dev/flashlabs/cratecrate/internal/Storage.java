@@ -34,10 +34,10 @@ public final class Storage {
             try (var connection = source.getConnection()) {
                 connection.prepareStatement("""
                     CREATE TABLE IF NOT EXISTS StandardKeys (
-                        uuid CHAR (36) NOT NULL,
+                        user_uuid CHAR (36) NOT NULL,
                         key_id VARCHAR (255) NOT NULL,
                         quantity INT NOT NULL,
-                        PRIMARY KEY (uuid, key_id)
+                        PRIMARY KEY (user_uuid, key_id)
                     )
                     """).executeUpdate();
                 connection.prepareStatement("""
@@ -72,7 +72,7 @@ public final class Storage {
             var statement = connection.prepareStatement("""
                 SELECT quantity
                 FROM StandardKeys
-                WHERE uuid = ? AND key_id = ?
+                WHERE user_uuid = ? AND key_id = ?
                 """);
             statement.setString(1, user.uniqueId().toString());
             statement.setString(2, key.id());
@@ -84,7 +84,7 @@ public final class Storage {
     public static void updateKeyQuantity(User user, Key key, int delta) throws SQLException {
         try (var connection = source.getConnection()) {
             var statement = connection.prepareStatement("""
-                INSERT INTO StandardKeys (uuid, key_id, quantity)
+                INSERT INTO StandardKeys (user_uuid, key_id, quantity)
                 VALUES (?, ?, ?)
                 ON DUPLICATE KEY UPDATE quantity = quantity + VALUES(quantity)
                 """);
