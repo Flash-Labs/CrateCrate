@@ -10,6 +10,7 @@ import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.exception.CommandException;
 import org.spongepowered.api.command.parameter.CommandContext;
 import org.spongepowered.api.command.parameter.Parameter;
+import org.spongepowered.api.entity.living.player.server.ServerPlayer;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -27,6 +28,11 @@ public final class Balance {
     private static CommandResult execute(CommandContext context) throws CommandException {
         var uuid = context.requireOne(Parameter.key("user", UUID.class));
         var key = context.requireOne(Parameter.key("key", Key.class));
+        if (context.cause().root() instanceof ServerPlayer
+            && !((ServerPlayer) context.cause().root()).uniqueId().equals(uuid)
+            && !context.hasPermission("cratecrate.command.key.balance.other")) {
+            throw new CommandException(Component.text("Cannot view other user's keys."));
+        }
         try {
             var user = Sponge.server().userManager().load(uuid).get()
                 .orElseThrow(() -> new CommandException(Component.text("Invalid user.")));
