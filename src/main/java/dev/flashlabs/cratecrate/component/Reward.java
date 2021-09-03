@@ -111,8 +111,8 @@ public final class Reward extends Component<Integer> {
         return prizes;
     }
 
-    public void give(User user) {
-        prizes.forEach(p -> p.first().give(user, p.second()));
+    public boolean give(User user) {
+        return prizes.stream().allMatch(p -> p.first().give(user, p.second()));
     }
 
     public static final class RewardType extends Type<Reward, Integer> {

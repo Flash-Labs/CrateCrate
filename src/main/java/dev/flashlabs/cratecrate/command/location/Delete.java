@@ -1,6 +1,7 @@
 package dev.flashlabs.cratecrate.command.location;
 
 import dev.flashlabs.cratecrate.internal.Storage;
+import net.kyori.adventure.identity.Identity;
 import net.kyori.adventure.text.Component;
 import org.spongepowered.api.command.Command;
 import org.spongepowered.api.command.CommandResult;
@@ -25,6 +26,7 @@ public final class Delete {
         try {
             Storage.deleteLocation(location);
             Storage.LOCATIONS.remove(location);
+            context.sendMessage(Identity.nil(), Component.text("Successfully deleted location."));
         } catch (SQLException e) {
             throw new CommandException(Component.text("Error deleting location: " + e.getMessage()));
         }

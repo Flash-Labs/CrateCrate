@@ -4,6 +4,7 @@ import dev.flashlabs.cratecrate.component.Crate;
 import dev.flashlabs.cratecrate.internal.Config;
 import dev.flashlabs.cratecrate.internal.Storage;
 import io.leangen.geantyref.TypeToken;
+import net.kyori.adventure.identity.Identity;
 import net.kyori.adventure.text.Component;
 import org.spongepowered.api.command.Command;
 import org.spongepowered.api.command.CommandResult;
@@ -30,6 +31,7 @@ public final class Set {
         try {
             Storage.setLocation(location, crate);
             Storage.LOCATIONS.put(location, crate);
+            context.sendMessage(Identity.nil(), Component.text("Successfully set location."));
         } catch (SQLException e) {
             throw new CommandException(Component.text("Error setting location: " + e.getMessage()));
         }

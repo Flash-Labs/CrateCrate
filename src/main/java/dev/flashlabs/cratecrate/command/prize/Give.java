@@ -5,6 +5,7 @@ import dev.flashlabs.cratecrate.component.prize.ItemPrize;
 import dev.flashlabs.cratecrate.component.prize.Prize;
 import dev.flashlabs.cratecrate.internal.Config;
 import io.leangen.geantyref.TypeToken;
+import net.kyori.adventure.identity.Identity;
 import net.kyori.adventure.text.Component;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.Command;
@@ -33,12 +34,18 @@ public final class Give {
         try {
             var user = Sponge.server().userManager().load(uuid).get()
                 .orElseThrow(() -> new CommandException(Component.text("Invalid user.")));
+            boolean result;
             if (prize instanceof CommandPrize) {
-                prize.give(user, value.orElse(""));
+                result = prize.give(user, value.orElse(""));
             } else if (prize instanceof ItemPrize) {
-                prize.give(user, value.map(Integer::parseInt).orElse(1));
+                result = prize.give(user, value.map(Integer::parseInt).orElse(1));
             } else {
                 throw new AssertionError(prize.getClass().getName());
+            }
+            if (result) {
+                context.sendMessage(Identity.nil(), Component.text("Successfully gave prize."));
+            } else {
+                throw new CommandException(Component.text("Failed to give prize."));
             }
         } catch (InterruptedException | ExecutionException e) {
             throw new CommandException(Component.text("Unable to load user."));

@@ -3,8 +3,11 @@ package dev.flashlabs.cratecrate.command.crate;
 import dev.flashlabs.cratecrate.component.Crate;
 import dev.flashlabs.cratecrate.component.Reward;
 import dev.flashlabs.cratecrate.internal.Config;
+import net.kyori.adventure.identity.Identity;
+import net.kyori.adventure.text.Component;
 import org.spongepowered.api.command.Command;
 import org.spongepowered.api.command.CommandResult;
+import org.spongepowered.api.command.exception.CommandException;
 import org.spongepowered.api.command.parameter.CommandContext;
 import org.spongepowered.api.command.parameter.Parameter;
 import org.spongepowered.api.entity.living.player.server.ServerPlayer;
@@ -22,12 +25,16 @@ public final class Give {
         .executor(Give::execute)
         .build();
 
-    private static CommandResult execute(CommandContext context) {
+    private static CommandResult execute(CommandContext context) throws CommandException {
         var player = context.requireOne(Parameter.key("player", ServerPlayer.class));
         var crate = context.requireOne(Parameter.key("crate", Crate.class));
         var location = context.one(Parameter.key("location", ServerLocation.class));
         var reward = context.requireOne(Parameter.key("reward", Reward.class));
-        crate.give(player, location.orElseGet(player::serverLocation), Tuple.of(reward, 0));
+        if (crate.give(player, location.orElseGet(player::serverLocation), Tuple.of(reward, 0))) {
+            context.sendMessage(Identity.nil(), Component.text("Successfully gave crate."));
+        } else {
+            throw new CommandException(Component.text("Failed to give crate."));
+        }
         return CommandResult.success();
     }
 

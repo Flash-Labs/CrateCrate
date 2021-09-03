@@ -98,12 +98,12 @@ public final class Crate extends Component<Void> {
         return rewards;
     }
 
-    public void open(ServerPlayer player, ServerLocation location) {
-        give(player, location, roll(player));
+    public boolean open(ServerPlayer player, ServerLocation location) {
+        return give(player, location, roll(player));
     }
 
-    public void give(ServerPlayer player, ServerLocation location, Tuple<? extends Reward, Integer> reward) {
-        reward.first().give(player.user());
+    public boolean give(ServerPlayer player, ServerLocation location, Tuple<? extends Reward, Integer> reward) {
+        return reward.first().give(player.user());
     }
 
     /**

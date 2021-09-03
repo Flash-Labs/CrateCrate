@@ -2,6 +2,7 @@ package dev.flashlabs.cratecrate.command.reward;
 
 import dev.flashlabs.cratecrate.component.Reward;
 import dev.flashlabs.cratecrate.internal.Config;
+import net.kyori.adventure.identity.Identity;
 import net.kyori.adventure.text.Component;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.Command;
@@ -28,7 +29,11 @@ public final class Give {
         try {
             var user = Sponge.server().userManager().load(uuid).get()
                 .orElseThrow(() -> new CommandException(Component.text("Invalid user.")));
-            reward.give(user);
+            if (reward.give(user)) {
+                context.sendMessage(Identity.nil(), Component.text("Successfully gave reward."));
+            } else {
+                throw new CommandException(Component.text("Failed to give reward."));
+            }
         } catch (InterruptedException | ExecutionException e) {
             throw new CommandException(Component.text("Unable to load user."));
         }
