@@ -14,11 +14,12 @@ import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import javax.sql.DataSource;
 
 public final class Storage {
 
-    public static final Map<ServerLocation, Crate> LOCATIONS = new HashMap<>();
+    public static final Map<ServerLocation, Optional<Crate>> LOCATIONS = new HashMap<>();
 
     private static final Path DIRECTORY = Sponge.configManager()
         .pluginConfig(CrateCrate.container())
@@ -57,8 +58,13 @@ public final class Storage {
                     var world = Sponge.server().worldManager().world(ResourceKey.resolve(result.getString(1)));
                     if (world.isPresent()) {
                         var location = world.get().location(result.getInt(2), result.getInt(3), result.getInt(4));
-                        var crate = Config.CRATES.get(result.getString(5));
+                        var crate = Optional.ofNullable(Config.CRATES.get(result.getString(5)));
                         LOCATIONS.put(location, crate);
+                        if (crate.isEmpty()) {
+                            CrateCrate.container().logger().error("Location is set to unknown crate: " + result.getString(5) + ".");
+                        }
+                    } else {
+                        CrateCrate.container().logger().error("Location is set to unknown world: " + result.getString(1) + ".");
                     }
                 }
             }

@@ -66,9 +66,12 @@ public final class Listeners {
         location = location.withBlockPosition(location.blockPosition());
         if (Storage.LOCATIONS.containsKey(location)) {
             event.setCancelled(true);
-            var crate = Storage.LOCATIONS.get(location);
-            if (event.context().get(EventContextKeys.USED_HAND).map(h -> h.equals(HandTypes.MAIN_HAND.get())).orElse(false)) {
-                return Optional.of(Tuple.of(crate, location.add(0.5, 0.5, 0.5)));
+            var crate =  Storage.LOCATIONS.get(location);
+            //TODO: User message for unavailable crate
+            if (crate.isPresent() && event.context().get(EventContextKeys.USED_HAND)
+                .map(h -> h.equals(HandTypes.MAIN_HAND.get()))
+                .orElse(false)) {
+                return Optional.of(Tuple.of(crate.get(), location.add(0.5, 0.5, 0.5)));
             }
         }
         return Optional.empty();

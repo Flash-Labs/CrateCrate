@@ -14,6 +14,7 @@ import org.spongepowered.api.command.parameter.Parameter;
 import org.spongepowered.api.world.server.ServerLocation;
 
 import java.sql.SQLException;
+import java.util.Optional;
 
 public final class Set {
 
@@ -30,7 +31,7 @@ public final class Set {
         location = location.withBlockPosition(location.blockPosition());
         try {
             Storage.setLocation(location, crate);
-            Storage.LOCATIONS.put(location, crate);
+            Storage.LOCATIONS.put(location, Optional.of(crate));
             context.sendMessage(Identity.nil(), Component.text("Successfully set location."));
         } catch (SQLException e) {
             throw new CommandException(Component.text("Error setting location: " + e.getMessage()));
