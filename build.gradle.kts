@@ -1,14 +1,14 @@
 import org.spongepowered.gradle.plugin.config.PluginLoaders
-import org.spongepowered.plugin.metadata.PluginDependency
+import org.spongepowered.plugin.metadata.model.PluginDependency
 
 plugins {
     `java-library`
-    id("org.spongepowered.gradle.plugin") version "1.1.1"
+    id("org.spongepowered.gradle.plugin") version "2.0.0"
     id("com.github.johnrengelman.shadow") version "7.0.0"
 }
 
 group = "dev.flashlabs.cratecrate"
-version = "0.1.0"
+version = "0.0.0"
 
 repositories {
     mavenCentral()
@@ -19,12 +19,16 @@ dependencies {
 }
 
 sponge {
-    apiVersion("8.0.0")
+    apiVersion("8.0.0-SNAPSHOT")
+    license("MIT")
+    loader {
+        name(PluginLoaders.JAVA_PLAIN)
+        version("1.0")
+    }
     plugin("cratecrate") {
-        loader(PluginLoaders.JAVA_PLAIN)
+        entrypoint("dev.flashlabs.cratecrate.CrateCrate")
         displayName("CrateCrate")
-        mainClass("dev.flashlabs.cratecrate.CrateCrate")
-        description("The cratest crate plugin.")
+        description("The cratest crate plugin of all time.")
         links {
             homepage("https://github.com/flash-labs/CrateCrate")
             source("https://github.com/flash-labs/CrateCrate")
