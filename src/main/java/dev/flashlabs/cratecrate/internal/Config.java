@@ -13,6 +13,7 @@ import org.spongepowered.configurate.hocon.HoconConfigurationLoader;
 import org.spongepowered.configurate.serialize.SerializationException;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -70,8 +71,8 @@ public final class Config {
         return (Type<? extends Crate, Void>) Config.<Crate>resolveType(node, Crate.class, Crate.TYPES, CRATES);
     }
 
-    public static Type<? extends Reward, Integer> resolveRewardType(ConfigurationNode node) throws SerializationException {
-        return (Type<? extends Reward, Integer>) Config.<Reward>resolveType(node, Reward.class, Reward.TYPES, REWARDS);
+    public static Type<? extends Reward, BigDecimal> resolveRewardType(ConfigurationNode node) throws SerializationException {
+        return (Type<? extends Reward, BigDecimal>) Config.<Reward>resolveType(node, Reward.class, Reward.TYPES, REWARDS);
     }
 
     public static Type<? extends Prize, ?> resolvePrizeType(ConfigurationNode node) throws SerializationException {

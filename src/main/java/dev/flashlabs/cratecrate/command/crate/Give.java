@@ -14,6 +14,8 @@ import org.spongepowered.api.entity.living.player.server.ServerPlayer;
 import org.spongepowered.api.util.Tuple;
 import org.spongepowered.api.world.server.ServerLocation;
 
+import java.math.BigDecimal;
+
 public final class Give {
 
     public static Command.Parameterized COMMAND = Command.builder()
@@ -30,7 +32,7 @@ public final class Give {
         var crate = context.requireOne(Parameter.key("crate", Crate.class));
         var location = context.one(Parameter.key("location", ServerLocation.class));
         var reward = context.requireOne(Parameter.key("reward", Reward.class));
-        if (crate.give(player, location.orElseGet(player::serverLocation), Tuple.of(reward, 0))) {
+        if (crate.give(player, location.orElseGet(player::serverLocation), Tuple.of(reward, BigDecimal.ZERO))) {
             context.sendMessage(Identity.nil(), Component.text("Successfully gave crate."));
         } else {
             throw new CommandException(Component.text("Failed to give crate."));

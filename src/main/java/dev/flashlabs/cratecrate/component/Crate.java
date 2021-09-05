@@ -17,6 +17,7 @@ import org.spongepowered.api.world.server.ServerLocation;
 import org.spongepowered.configurate.ConfigurationNode;
 import org.spongepowered.configurate.serialize.SerializationException;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -34,7 +35,7 @@ public final class Crate extends Component<Void> {
     private final Optional<ImmutableList<String>> lore;
     private final Optional<ItemStackSnapshot> icon;
     private final ImmutableList<Tuple<? extends Key, Integer>> keys;
-    private final ImmutableList<Tuple<? extends Reward, Integer>> rewards;
+    private final ImmutableList<Tuple<? extends Reward, BigDecimal>> rewards;
 
     private Crate(
         String id,
@@ -42,7 +43,7 @@ public final class Crate extends Component<Void> {
         Optional<ImmutableList<String>> lore,
         Optional<ItemStackSnapshot> icon,
         ImmutableList<Tuple<? extends Key, Integer>> keys,
-        ImmutableList<Tuple<? extends Reward, Integer>> rewards
+        ImmutableList<Tuple<? extends Reward, BigDecimal>> rewards
     ) {
         super(id);
         this.name = name;
@@ -94,7 +95,7 @@ public final class Crate extends Component<Void> {
         return keys;
     }
 
-    public ImmutableList<Tuple<? extends Reward, Integer>> rewards() {
+    public ImmutableList<Tuple<? extends Reward, BigDecimal>> rewards() {
         return rewards;
     }
 
@@ -102,7 +103,7 @@ public final class Crate extends Component<Void> {
         return give(player, location, roll(player));
     }
 
-    public boolean give(ServerPlayer player, ServerLocation location, Tuple<? extends Reward, Integer> reward) {
+    public boolean give(ServerPlayer player, ServerLocation location, Tuple<? extends Reward, BigDecimal> reward) {
         return reward.first().give(player.user());
     }
 
@@ -110,12 +111,12 @@ public final class Crate extends Component<Void> {
      * Returns a random reward rolled from this crate. Currently, rewards are
      * not dependent on the player but this is likely to change in the future.
      */
-    public Tuple<? extends Reward, Integer> roll(ServerPlayer player) {
-        int sum = rewards.stream().mapToInt(Tuple::second).sum();
-        int selection = RANDOM.nextInt(sum);
-        for (Tuple<? extends Reward, Integer> reward : rewards) {
-            selection -= reward.second();
-            if (selection < 0) {
+    public Tuple<? extends Reward, BigDecimal> roll(ServerPlayer player) {
+        var sum = rewards.stream().map(Tuple::second).reduce(BigDecimal.ZERO, BigDecimal::add);
+        var selection = BigDecimal.valueOf(RANDOM.nextDouble()).multiply(sum);
+        for (Tuple<? extends Reward, BigDecimal> reward : rewards) {
+            selection = selection.subtract(reward.second());
+            if (selection.compareTo(BigDecimal.ZERO) <= 0) {
                 return reward;
             }
         }
@@ -161,7 +162,7 @@ public final class Crate extends Component<Void> {
                 var values = key.childrenList().subList(key.isList() ? 1 : 0, key.childrenList().size());
                 keys.add(Config.resolveKeyType(component).deserializeReference(component, values));
             }
-            var rewards = new ArrayList<Tuple<? extends Reward, Integer>>();
+            var rewards = new ArrayList<Tuple<? extends Reward, BigDecimal>>();
             for (ConfigurationNode reward : node.node("rewards").childrenList()) {
                 var component = reward.isList() ? reward.node(0) : reward;
                 var values = reward.childrenList().subList(reward.isList() ? 1 : 0, reward.childrenList().size());

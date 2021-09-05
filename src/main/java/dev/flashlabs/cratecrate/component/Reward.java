@@ -15,13 +15,14 @@ import org.spongepowered.api.util.Tuple;
 import org.spongepowered.configurate.ConfigurationNode;
 import org.spongepowered.configurate.serialize.SerializationException;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-public final class Reward extends Component<Integer> {
+public final class Reward extends Component<BigDecimal> {
 
     public static final RewardType TYPE = new RewardType();
     public static final Map<String, Type<? extends Reward, ?>> TYPES = new HashMap<>();
@@ -51,7 +52,7 @@ public final class Reward extends Component<Integer> {
      * prizes exist). The reference value is currently unused.
      */
     @Override
-    public net.kyori.adventure.text.Component name(Optional<Integer> unused) {
+    public net.kyori.adventure.text.Component name(Optional<BigDecimal> unused) {
         if (name.isPresent()) {
             return LegacyComponentSerializer.legacyAmpersand().deserialize(name.get());
         } else if (prizes.size() == 1) {
@@ -68,7 +69,7 @@ public final class Reward extends Component<Integer> {
      * {@code ${weight}}.
      */
     @Override
-    public List<net.kyori.adventure.text.Component> lore(Optional<Integer> weight) {
+    public List<net.kyori.adventure.text.Component> lore(Optional<BigDecimal> weight) {
         if (lore.isPresent()) {
             return lore.get().stream().map(s -> {
                 s = s.replaceAll("\\$\\{weight}", weight.map(String::valueOf).orElse("${weight}"));
@@ -88,7 +89,7 @@ public final class Reward extends Component<Integer> {
      * set to this reward's name/lore.
      */
     @Override
-    public ItemStack icon(Optional<Integer> weight) {
+    public ItemStack icon(Optional<BigDecimal> weight) {
         var base = icon.map(ItemStackSnapshot::createStack).orElseGet(() -> {
             if (prizes.size() == 1) {
                 return prizes.get(0).first().icon(Optional.of(prizes.get(0).second()));
@@ -113,7 +114,7 @@ public final class Reward extends Component<Integer> {
         return prizes.stream().allMatch(p -> p.first().give(user, p.second()));
     }
 
-    public static final class RewardType extends Type<Reward, Integer> {
+    public static final class RewardType extends Type<Reward, BigDecimal> {
 
         public RewardType() {
             super("Reward", CrateCrate.container());
@@ -164,17 +165,17 @@ public final class Reward extends Component<Integer> {
          * <pre>{@code
          * RewardReference:
          *     node: Reward | String (Reward id) | PrizeReference (map/string)
-         *        weight: Integer (required for Reward, required for
+         *        weight: BigDecimal (required for Reward, required for
          *            PrizeReference when reference value is not defined)
          *     values: [
          *        list... (limit 1 for Reward/String),
-         *        Optional<Integer> (required for String, required for
+         *        Optional<BigDecimal> (required for String, required for
          *            PrizeReference when weight is not defined)
          *     ]
          * }</pre>
          */
         @Override
-        public Tuple<Reward, Integer> deserializeReference(ConfigurationNode node, List<? extends ConfigurationNode> values) throws SerializationException {
+        public Tuple<Reward, BigDecimal> deserializeReference(ConfigurationNode node, List<? extends ConfigurationNode> values) throws SerializationException {
             Reward reward;
             if (node.isMap()) {
                 if (node.hasChild("prizes")) {
@@ -196,12 +197,12 @@ public final class Reward extends Component<Integer> {
                 }
             }
             //TODO: Validate reference value counts and existence
-            var value = (!values.isEmpty() ? values.get(0) : node.node("weight")).getInt();
+            var value = new BigDecimal((!values.isEmpty() ? values.get(0) : node.node("weight")).getString());
             return Tuple.of(reward, value);
         }
 
         @Override
-        public void reserializeReference(ConfigurationNode node, Tuple<Reward, Integer> reference) throws SerializationException {
+        public void reserializeReference(ConfigurationNode node, Tuple<Reward, BigDecimal> reference) throws SerializationException {
             throw new UnsupportedOperationException(); //TODO
         }
 
