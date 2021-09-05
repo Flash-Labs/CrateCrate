@@ -57,8 +57,9 @@ public final class Serializers {
             if (node.hasChild("enchantments")) {
                 var enchantments = new ArrayList<Enchantment>();
                 for (ConfigurationNode n : node.node("enchantments").childrenList()) {
-                    var type = RegistryTypes.ENCHANTMENT_TYPE.get().findValue(ResourceKey.resolve(n.node(0).getString("")))
-                        .orElseThrow(() -> new SerializationException(n.node(0), EnchantmentType.class, "Unknown echantment type."));
+                    var type = RegistryTypes.ENCHANTMENT_TYPE.get()
+                        .findValue(ResourceKey.resolve(Optional.ofNullable(n.node(0).getString()).orElse("")))
+                        .orElseThrow(() -> new SerializationException(n.node(0), EnchantmentType.class, "Unknown enchantment type."));
                     var level = n.node(1).getInt(1);
                     enchantments.add(Enchantment.of(type, level));
                 }
