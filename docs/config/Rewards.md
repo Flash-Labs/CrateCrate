@@ -77,9 +77,9 @@ A reward containing the example CommandPrizes.
 ```java
 command-prizes {
     prizes = [
-        ["say", "Hello, World!"]
+        ["greet"]
         ["me", "rolls nat 20"]
-        ["/clear ${user}"]
+        ["/say The Server Speaks!"]
     ]
 }
 ```

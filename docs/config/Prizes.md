@@ -77,30 +77,27 @@ prizes = [
 ### Examples
 
 <details>
-<summary>Say (simple command)</summary>
+<summary>Greet (simple command)</summary>
 
-Says a message from the server.
-
-> By `v0.1.0`, crates and rewards will have built-in broadcasts/messages which
-> should be preferred over using commands.
+Greets the user with a friendly message.
 
 ```java
-say {
-    name = "Say"
-    lore = ["\"${value}\""]
-    command = "/say ${value}"
+greet {
+    name = "Greet"
+    lore = ["\"Greets the user\""]
+    command = "/say Hello, ${user}"
 }
 ```
 
 ```java
 prizes = [
-    ["say", "Hello, World!"]
+    ["greet"]
 ]
 ```
 </details>
 
 <details>
-<summary>Me (player source)</summary>
+<summary>Me (player source, reference value)</summary>
 
 Displays a `/me` action executed by the player
 
@@ -123,13 +120,16 @@ prizes = [
 </details>
 
 <details>
-<summary>Clear (inline reference)</summary>
+<summary>Say (inline reference)</summary>
 
-Clears the inventory of the user... use at your own risk.
+Says a message from the server.
+
+> By `v0.1.0`, crates and rewards will have built-in broadcasts/messages which
+> should be preferred over using commands.
 
 ```java
 prizes = [
-    ["/clear ${user}"]
+    ["/say The Server Speaks!"]
 ]
 ```
 </details>
