@@ -10,6 +10,7 @@ import net.kyori.adventure.identity.Identity;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.Style;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.spongepowered.api.command.Command;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.parameter.CommandContext;
@@ -33,11 +34,11 @@ public final class Base {
             Component.text("CrateCrate v" + CrateCrate.container().metadata().version()),
             Component.text("GitHub: ").append(Component.text()
                 .content("https://github.com/flash-labs/CrateCrate")
-                .style(Style.style(ClickEvent.openUrl("https://github.com/flash-labs/CrateCrate")))
+                .style(Style.style(TextDecoration.UNDERLINED, ClickEvent.openUrl("https://github.com/flash-labs/CrateCrate")))
                 .build()),
             Component.text("Discord: ").append(Component.text()
-                .content("https://discord.gg/4wayq37")
-                .style(Style.style(ClickEvent.openUrl("https://discord.gg/4wayq37")))
+                .content("https://discord.gg/zWqnAa9KRn")
+                .style(Style.style(TextDecoration.UNDERLINED, ClickEvent.openUrl("https://discord.gg/zWqnAa9KRn")))
                 .build())
         );
         messages.forEach(m -> context.sendMessage(Identity.nil(), m));

@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "dev.flashlabs.cratecrate"
-version = "0.0.0"
+version = "0.0.1"
 
 repositories {
     mavenCentral()
@@ -60,6 +60,7 @@ tasks.withType(JavaCompile::class).configureEach {
 
 // Make sure all tasks which produce archives (jar, sources jar, javadoc jar, etc) produce more consistent output
 tasks.withType(AbstractArchiveTask::class).configureEach {
+    archiveVersion.set("v${project.version}")
     isReproducibleFileOrder = true
     isPreserveFileTimestamps = false
 }
