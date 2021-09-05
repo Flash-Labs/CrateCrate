@@ -48,14 +48,12 @@ public final class Reward extends Component<Integer> {
     /**
      * Returns the name of this reward, defaulting to either the name of the
      * first prize (if only one prize exists) or this reward's id (if multiple
-     * prizes exist). If a reference value is provided, it replaces
-     * {@code ${weight}}.
+     * prizes exist). The reference value is currently unused.
      */
     @Override
-    public net.kyori.adventure.text.Component name(Optional<Integer> weight) {
+    public net.kyori.adventure.text.Component name(Optional<Integer> unused) {
         if (name.isPresent()) {
-            var replaced = name.get().replaceAll("\\$\\{value}", weight.map(String::valueOf).orElse("${value}"));
-            return LegacyComponentSerializer.legacyAmpersand().deserialize(replaced);
+            return LegacyComponentSerializer.legacyAmpersand().deserialize(name.get());
         } else if (prizes.size() == 1) {
             return prizes.get(0).first().name(Optional.of(prizes.get(0).second()));
         } else {
@@ -73,7 +71,7 @@ public final class Reward extends Component<Integer> {
     public List<net.kyori.adventure.text.Component> lore(Optional<Integer> weight) {
         if (lore.isPresent()) {
             return lore.get().stream().map(s -> {
-                s = s.replaceAll("\\$\\{value}", weight.map(String::valueOf).orElse("${value}"));
+                s = s.replaceAll("\\$\\{weight}", weight.map(String::valueOf).orElse("${weight}"));
                 return LegacyComponentSerializer.legacyAmpersand().deserialize(s).asComponent();
             }).toList();
         } else if (prizes.size() == 1) {

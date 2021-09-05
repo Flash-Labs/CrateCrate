@@ -6,6 +6,7 @@ import dev.flashlabs.cratecrate.component.Type;
 import dev.flashlabs.cratecrate.internal.Config;
 import dev.flashlabs.cratecrate.internal.Serializers;
 import dev.flashlabs.cratecrate.internal.Storage;
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.spongepowered.api.data.Keys;
 import org.spongepowered.api.entity.living.player.User;
@@ -41,44 +42,44 @@ public final class StandardKey extends Key {
     }
 
     /**
-     * Returns the name of this key, defaulting to the id followed by the
-     * quantity in parenthesis (if present). If a reference value is given, it
-     * replaces {@code ${quantity}}.
+     * Returns the name of this key, defaulting to the id. If a reference value
+     * is given, it is appended to the name in the form {@code (x#)}.
      */
     @Override
     public net.kyori.adventure.text.Component name(Optional<Integer> quantity) {
-        return name.map(s -> {
-            s = s.replaceAll("\\$\\{quantity}", quantity.map(String::valueOf).orElse("${quantity}"));
-            return LegacyComponentSerializer.legacyAmpersand().deserialize(s);
-        }).orElseGet(() -> net.kyori.adventure.text.Component.text(id + quantity.map(q -> " (" + q + ")").orElse("")));
+        return LegacyComponentSerializer.legacyAmpersand().deserialize(name.orElse(id))
+            .append(Component.text(quantity.map(q -> " (x" + q + ")").orElse("")));
     }
 
     /**
-     * Returns the lore of this key, defaulting to an empty list.
+     * Returns the lore of this key, defaulting to an empty list. The reference
+     * value is currently unused.
      */
     @Override
-    public List<net.kyori.adventure.text.Component> lore(Optional<Integer> quantity) {
-        return lore.orElseGet(ImmutableList::of).stream().map(s -> {
-            s = s.replaceAll("\\$\\{quantity}", quantity.map(String::valueOf).orElse("${quantity}"));
-            return LegacyComponentSerializer.legacyAmpersand().deserialize(s).asComponent();
-        }).toList();
+    public List<net.kyori.adventure.text.Component> lore(Optional<Integer> unused) {
+        return lore.orElseGet(ImmutableList::of).stream()
+            .map(s -> LegacyComponentSerializer.legacyAmpersand().deserialize(s).asComponent())
+            .toList();
     }
 
     /**
      * Returns the icon of this key, defaulting to a tripwire hook. If the icon
      * does not have a defined display name or lore, it is set to this key's
-     * name/lore.
+     * name/lore with the quantity if it is larger than the max stack size. The
+     * quantity of the icon is set to the given quantity if it is no more
+     * than the max stack size, else it is {@code 1}.
      */
     @Override
     public ItemStack icon(Optional<Integer> quantity) {
         var base = icon.map(ItemStackSnapshot::createStack)
             .orElseGet(() -> ItemStack.of(ItemTypes.TRIPWIRE_HOOK, 1));
         if (base.get(Keys.CUSTOM_NAME).isEmpty()) {
-            base.offer(Keys.CUSTOM_NAME, name(quantity));
+            base.offer(Keys.CUSTOM_NAME, name(quantity.filter(q -> q > base.maxStackQuantity())));
         }
         if (lore.isPresent() && base.get(Keys.LORE).isEmpty()) {
-            base.offer(Keys.LORE, lore(quantity));
+            base.offer(Keys.LORE, lore(Optional.empty()));
         }
+        base.setQuantity(quantity.filter(q -> q <= base.maxStackQuantity()).orElse(1));
         return base;
     }
 
