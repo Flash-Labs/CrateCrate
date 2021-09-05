@@ -74,6 +74,66 @@ prizes = [
 ]
 ```
 
+### Examples
+
+<details>
+<summary>Say (simple command)</summary>
+
+Says a message from the server.
+
+> By `v0.1.0`, crates and rewards will have built-in broadcasts/messages which
+> should be preferred over using commands.
+
+```java
+say {
+    name = "Say"
+    lore = ["\"${value}\""]
+    command = "/say ${value}"
+}
+```
+
+```java
+prizes = [
+    ["say", "Hello, World!"]
+]
+```
+</details>
+
+<details>
+<summary>Me (player source)</summary>
+
+Displays a `/me` action executed by the player
+
+```java
+me {
+    name = "Me"
+    lore = ["* ${value}"]
+    command {
+        command = "/me ${value}"
+        source = "player"
+    }
+}
+```
+
+```java
+prizes = [
+    ["me", "rolls nat 20"]
+]
+```
+</details>
+
+<details>
+<summary>Clear (inline reference)</summary>
+
+Clears the inventory of the user... use at your own risk.
+
+```java
+prizes = [
+    ["/clear ${user}"]
+]
+```
+</details>
+
 ---
 
 ## ItemPrize
@@ -151,5 +211,66 @@ prizes = [
     ["<item-type>", <quantity>]
 ]
 ```
+
+### Examples
+
+<details>
+<summary>Apple (simple item)</summary>
+
+Gives an apple to the user. The prize itself also has a custom display name and
+lore, which is used in text/menus but does not apply to the item given.
+
+```java
+apple {
+    name = "&cApple"
+    lore = ["&7An apple a day keeps the doctor away"]
+    item = "minecraft:apple"
+}
+```
+
+```java
+prizes = [
+    ["apple", 1]
+]
+```
+</details>
+
+<details>
+<summary>Monado (name/lore/enchantments)</summary>
+
+Gives the player a [powerful sword](https://xenoblade.fandom.com/wiki/Monado).
+
+```java
+monado {
+    item {
+        type = "minecraft:diamond_sword"
+        name = "&bMonado"
+        lore = ["&f\"Today, we use our power to fell a god...\""]
+        enchantments = [
+            ["minecraft:sharpness", 10]
+            ["minecraft:fortune", 1]
+        ]
+    }
+}
+```
+
+```java
+prizes = [
+    ["monado", 1]
+]
+```
+</details>
+
+<details>
+<summary>Cookie (inline reference)</summary>
+
+Just a normal cookie.
+
+```java
+prizes = [
+    ["minecaft:cookie", 3]
+]
+```
+</details>
 
 ---

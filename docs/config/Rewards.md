@@ -67,4 +67,38 @@ rewards = [
 ]
 ```
 
+### Examples
+
+<details>
+<summary>CommandPrizes (referencing commands)</summary>
+
+A reward containing the example CommandPrizes.
+
+```java
+command-prizes {
+    prizes = [
+        ["say", "Hello, World!"]
+        ["me", "rolls nat 20"]
+        ["/clear ${user}"]
+    ]
+}
+```
+</details>
+
+<details>
+<summary>ItemPrizes (referencing items)</summary>
+
+A reward containing the example ItemPrizes.
+
+```java
+item-prizes {
+    prizes = [
+        ["apple", 1]
+        ["monado", 1]
+        ["minecraft:cookie", 3]
+    ]
+}
+```
+</details>
+
 ---

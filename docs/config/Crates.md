@@ -26,3 +26,27 @@ Crates define everything necessary to open a crate, such as keys and rewards.
 | |
 | `keys` | List<KeyReference> | The keys for this crate | An empty list |
 | `rewards` | List<RewardReference> | The rewards for this crate | Required |
+
+### Examples
+
+<details>
+<summary>Example</summary>
+
+A crate containing the example key and rewards.
+
+```java
+example {
+    name = "&eExample Crate"
+    lore = ["&6An example crate"]
+    keys = [
+        ["example", 1]
+    ]
+    rewards = [
+        ["command-prizes", 50.0]
+        ["item-prizes", 50.0]
+    ]
+}
+```
+</details>
+
+---

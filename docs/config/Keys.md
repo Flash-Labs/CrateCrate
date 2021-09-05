@@ -48,3 +48,42 @@ keys = [
     ["<new-key-id>", <quantity>]
 ]
 ```
+
+### Examples
+
+<details>
+<summary>Example (name/lore/icon)</summary>
+
+A standard key with `name`/`lore`/`icon`. Though the default icon is a
+`tripwire_hook`, this adds an enchantment effect for style points.
+
+```java
+example {
+    name = "&eExample Key"
+    lore = ["&6An example key"]
+    icon = {
+        type = "minecraft:tripwire_hook"
+        enchantments = [
+            ["minecraft:fortune", 1]
+        ]
+    }
+}
+```
+</details>
+
+<details>
+<summary>Example (inline reference)</summary>
+
+A key with id `example` defined inline.
+
+> It's recommended to define keys separately to customize `name`/`lore`/`icon`
+> as needed, but this example is included here for completion.
+
+```java
+keys = [
+    ["example", 1]
+]
+```
+</details>
+
+---
