@@ -14,8 +14,11 @@ import org.spongepowered.configurate.serialize.SerializationException;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.net.URI;
+import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -63,7 +66,9 @@ public final class Config {
 
     private static ConfigurationNode load(String name) throws IOException {
         Path path = DIRECTORY.resolve(name);
-        Sponge.assetManager().asset(CrateCrate.container(), name).get().copyToFile(path);
+        if (Files.notExists(path)) {
+            Files.copy(CrateCrate.container().openResource(URI.create("assets/cratecrate/"  + name)).get(), path);
+        }
         return HoconConfigurationLoader.builder().path(path).build().load();
     }
 
