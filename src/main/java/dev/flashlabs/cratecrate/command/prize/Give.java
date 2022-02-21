@@ -2,6 +2,7 @@ package dev.flashlabs.cratecrate.command.prize;
 
 import dev.flashlabs.cratecrate.component.prize.CommandPrize;
 import dev.flashlabs.cratecrate.component.prize.ItemPrize;
+import dev.flashlabs.cratecrate.component.prize.MoneyPrize;
 import dev.flashlabs.cratecrate.component.prize.Prize;
 import dev.flashlabs.cratecrate.internal.Config;
 import io.leangen.geantyref.TypeToken;
@@ -14,6 +15,7 @@ import org.spongepowered.api.command.exception.CommandException;
 import org.spongepowered.api.command.parameter.CommandContext;
 import org.spongepowered.api.command.parameter.Parameter;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
@@ -39,6 +41,8 @@ public final class Give {
                 result = prize.give(user, value.orElse(""));
             } else if (prize instanceof ItemPrize) {
                 result = prize.give(user, value.map(Integer::parseInt).orElse(1));
+            } else if (prize instanceof MoneyPrize) {
+                result = prize.give(user, value.map(BigDecimal::new).orElse(BigDecimal.ZERO));
             } else {
                 throw new AssertionError(prize.getClass().getName());
             }

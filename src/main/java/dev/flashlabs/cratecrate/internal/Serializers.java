@@ -8,7 +8,8 @@ import org.spongepowered.api.item.ItemType;
 import org.spongepowered.api.item.enchantment.Enchantment;
 import org.spongepowered.api.item.enchantment.EnchantmentType;
 import org.spongepowered.api.item.inventory.ItemStack;
-import org.spongepowered.api.registry.RegistryTypes;
+import org.spongepowered.api.registry.*;
+import org.spongepowered.api.service.economy.Currency;
 import org.spongepowered.configurate.ConfigurationNode;
 import org.spongepowered.configurate.serialize.SerializationException;
 
@@ -25,6 +26,22 @@ public final class Serializers {
         void reserialize(ConfigurationNode node, T value) throws SerializationException;
 
     }
+
+    public static final Serializer<Currency> CURRENCY = new Serializer<>() {
+
+        @Override
+        public Currency deserialize(ConfigurationNode node) throws SerializationException {
+            var id = Optional.ofNullable(node.getString()).orElse("");
+            return RegistryTypes.CURRENCY.get().findValue(ResourceKey.resolve(id))
+                .orElseThrow(() -> new SerializationException(node, Currency.class, "Unknown currency."));
+        }
+
+        @Override
+        public void reserialize(ConfigurationNode node, Currency value) throws SerializationException {
+            node.set(String.class, value.key(RegistryTypes.ITEM_TYPE).formatted());
+        }
+
+    };
 
     public static final Serializer<ItemType> ITEM_TYPE = new Serializer<>() {
 

@@ -8,6 +8,7 @@ import dev.flashlabs.cratecrate.component.key.Key;
 import dev.flashlabs.cratecrate.component.key.StandardKey;
 import dev.flashlabs.cratecrate.component.prize.CommandPrize;
 import dev.flashlabs.cratecrate.component.prize.ItemPrize;
+import dev.flashlabs.cratecrate.component.prize.MoneyPrize;
 import dev.flashlabs.cratecrate.component.prize.Prize;
 import dev.flashlabs.cratecrate.internal.Config;
 import dev.flashlabs.cratecrate.internal.Listeners;
@@ -45,6 +46,8 @@ public final class CrateCrate {
         Prize.TYPES.put(CommandPrize.class.getName(), CommandPrize.TYPE);
         Prize.TYPES.put(ItemPrize.TYPE.name(), ItemPrize.TYPE);
         Prize.TYPES.put(ItemPrize.class.getName(), ItemPrize.TYPE);
+        Prize.TYPES.put(MoneyPrize.TYPE.name(), MoneyPrize.TYPE);
+        Prize.TYPES.put(MoneyPrize.class.getName(), MoneyPrize.TYPE);
         Key.TYPES.put(StandardKey.TYPE.name(), StandardKey.TYPE);
         Key.TYPES.put(StandardKey.class.getName(), StandardKey.TYPE);
         Sponge.eventManager().registerListeners(container, new Listeners());
