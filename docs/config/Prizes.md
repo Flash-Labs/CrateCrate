@@ -274,3 +274,107 @@ prizes = [
 </details>
 
 ---
+
+## MoneyPrize
+
+A prize which gives an amount of a currency when given, naturally requiring an
+economy plugin. If the `money` node is present, the prize is matched to this
+type.
+
+```java
+<id> {
+    //name, lore, icon
+    money {
+        currency = "<currency-type>"
+    }
+}
+```
+
+If only the `currency` needs to be specified, prefer setting it directly which
+will use the default values for the other properties.
+
+```java
+<id> {
+    //name, lore, icon
+    money = "<currency-type>"
+}
+```
+
+If `name`/`lore`/`icon` are also unspecified, prefer using an inline
+[reference](#Referencing-2) instead of defining a new prize.
+
+### Properties
+
+| Name | Type | Description | Default |
+| -- | --- | --- | --- |
+| `name` | Text | The prize name, inherited from Component | The `item`'s custom name if specified, else the item type |
+| `lore` | List<Text> | The prize lore, inherited from Component | The `item`s lore if specified, else an empty list |
+| `icon` | Item | The prize icon, inherited from Component | The `item` with the above `name`/`lore` if not specified |
+| |
+| `currency` | String | The currency type, in the form `<namespace>:<id>` | Required |
+| |
+| `amount` | Integer/Decimal | The reference value, which is the amount of money given | Required |
+
+### Referencing
+
+The reference value for a money prize is the `quantity`, which is required.
+Currencies can also be defined inline using an object.
+
+```java
+prizes = [
+    ["<money-prize-id>", <amount>]
+    {
+        money = "currency-type" | { ... }
+        amount = <quantity>
+    }
+]
+```
+
+If only the `currency` and `quantity` need to be specified, prefer using an
+inline reference instead of defining a new prize.
+
+```java
+prizes = [
+    ["$", <quantity>] //default currency
+    ["$<currency-type>", <quantity>]
+]
+```
+
+### Examples
+
+<details>
+<summary>Tokens (simple money prize)</summary>
+
+Gives a number of tokens to the user. This requires an appropriate currency to
+be defined with the server's economy plugin.
+
+```java
+tokens {
+    name = "&eTokens"
+    lore = ["&6Usable in the Arcade!"]
+    money {
+        currency = "<economy-plugin>:tokens" //varies by plugin
+    }
+}
+```
+
+```java
+prizes = [
+    ["tokens", 100]
+]
+```
+</details>
+
+<details>
+<summary>Default Currency (inline reference)</summary>
+
+Gives the player an amount of money using the default currency.
+
+```java
+prizes = [
+    ["$", 250.0]
+]
+```
+</details>
+
+---

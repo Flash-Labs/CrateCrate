@@ -102,3 +102,19 @@ item-prizes {
 </details>
 
 ---
+
+<details>
+<summary>MoneyPrizes (referencing currencies)</summary>
+
+A reward containing the example MoneyPrizes. Since this requires an economy
+plugin, it is not included in the default config.
+
+```java
+money-prizes {
+    prizes = [
+        ["tokens", 100]
+        ["$", 250]
+    ]
+}
+```
+</details>
