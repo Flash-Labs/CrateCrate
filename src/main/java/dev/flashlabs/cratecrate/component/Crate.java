@@ -5,24 +5,26 @@ import com.google.common.collect.Maps;
 import dev.flashlabs.cratecrate.CrateCrate;
 import dev.flashlabs.cratecrate.component.key.Key;
 import dev.flashlabs.cratecrate.internal.Config;
+import dev.flashlabs.cratecrate.internal.SerializationException;
 import dev.flashlabs.cratecrate.internal.Serializers;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
-import org.spongepowered.api.data.Keys;
-import org.spongepowered.api.entity.living.player.server.ServerPlayer;
+import ninja.leaping.configurate.ConfigurationNode;
+import org.spongepowered.api.data.key.Keys;
+import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.item.ItemTypes;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.item.inventory.ItemStackSnapshot;
+import org.spongepowered.api.text.Text;
+import org.spongepowered.api.text.serializer.TextSerializers;
 import org.spongepowered.api.util.Tuple;
-import org.spongepowered.api.world.server.ServerLocation;
-import org.spongepowered.configurate.ConfigurationNode;
-import org.spongepowered.configurate.serialize.SerializationException;
+import org.spongepowered.api.world.Location;
+import org.spongepowered.api.world.World;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 public final class Crate extends Component<Void> {
 
@@ -57,20 +59,20 @@ public final class Crate extends Component<Void> {
      * Returns the name of this crate, defaulting to the id.
      */
     @Override
-    public net.kyori.adventure.text.Component name(Optional<Void> ignored) {
+    public Text name(Optional<Void> ignored) {
         return name
-            .map(s -> LegacyComponentSerializer.legacyAmpersand().deserialize(s))
-            .orElseGet(() -> net.kyori.adventure.text.Component.text(id));
+            .map(TextSerializers.FORMATTING_CODE::deserialize)
+            .orElseGet(() -> Text.of(id));
     }
 
     /**
      * Returns the lore of this crate, defaulting to an empty list.
      */
     @Override
-    public List<net.kyori.adventure.text.Component> lore(Optional<Void> ignored) {
-        return lore.orElseGet(ImmutableList::of).stream()
-            .map(s -> LegacyComponentSerializer.legacyAmpersand().deserialize(s).asComponent())
-            .toList();
+    public List<Text> lore(Optional<Void> ignored) {
+        return lore.orElse(ImmutableList.of()).stream()
+            .map(TextSerializers.FORMATTING_CODE::deserialize)
+            .collect(Collectors.toList());
     }
 
     /**
@@ -80,13 +82,13 @@ public final class Crate extends Component<Void> {
      */
     @Override
     public ItemStack icon(Optional<Void> ignored) {
-        var base = icon.map(ItemStackSnapshot::createStack)
+        ItemStack base = icon.map(ItemStackSnapshot::createStack)
             .orElseGet(() -> ItemStack.of(ItemTypes.CHEST, 1));
-        if (base.get(Keys.CUSTOM_NAME).isEmpty()) {
-            base.offer(Keys.CUSTOM_NAME, name(Optional.empty()));
+        if (!base.get(Keys.DISPLAY_NAME).isPresent()) {
+            base.offer(Keys.DISPLAY_NAME, name(ignored));
         }
-        if (lore.isPresent() && base.get(Keys.LORE).isEmpty()) {
-            base.offer(Keys.LORE, lore(Optional.empty()));
+        if (lore.isPresent() && !base.get(Keys.ITEM_LORE).isPresent()) {
+            base.offer(Keys.ITEM_LORE, lore(ignored));
         }
         return base;
     }
@@ -99,23 +101,23 @@ public final class Crate extends Component<Void> {
         return rewards;
     }
 
-    public boolean open(ServerPlayer player, ServerLocation location) {
+    public boolean open(Player player, Location<World> location) {
         return give(player, location, roll(player));
     }
 
-    public boolean give(ServerPlayer player, ServerLocation location, Tuple<? extends Reward, BigDecimal> reward) {
-        return reward.first().give(player.user());
+    public boolean give(Player player, Location<World> location, Tuple<? extends Reward, BigDecimal> reward) {
+        return reward.getFirst().give(player);
     }
 
     /**
      * Returns a random reward rolled from this crate. Currently, rewards are
      * not dependent on the player but this is likely to change in the future.
      */
-    public Tuple<? extends Reward, BigDecimal> roll(ServerPlayer player) {
-        var sum = rewards.stream().map(Tuple::second).reduce(BigDecimal.ZERO, BigDecimal::add);
-        var selection = BigDecimal.valueOf(RANDOM.nextDouble()).multiply(sum);
+    public Tuple<? extends Reward, BigDecimal> roll(Player player) {
+        BigDecimal sum = rewards.stream().map(Tuple::getSecond).reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal selection = BigDecimal.valueOf(RANDOM.nextDouble()).multiply(sum);
         for (Tuple<? extends Reward, BigDecimal> reward : rewards) {
-            selection = selection.subtract(reward.second());
+            selection = selection.subtract(reward.getSecond());
             if (selection.compareTo(BigDecimal.ZERO) <= 0) {
                 return reward;
             }
@@ -127,7 +129,7 @@ public final class Crate extends Component<Void> {
     public static final class CrateType extends Type<Crate, Void> {
 
         private CrateType() {
-            super("Crate", CrateCrate.container());
+            super("Crate", CrateCrate.getContainer());
         }
 
         @Override
@@ -149,26 +151,31 @@ public final class Crate extends Component<Void> {
          */
         @Override
         public Crate deserializeComponent(ConfigurationNode node) throws SerializationException {
-            var name = Optional.ofNullable(node.node("name").get(String.class));
-            var lore = node.node("lore").isList()
-                ? Optional.ofNullable(node.node("lore").getList(String.class)).map(ImmutableList::copyOf)
-                : Optional.<ImmutableList<String>>empty();
-            var icon = node.hasChild("icon")
-                ? Optional.of(Serializers.ITEM_STACK.deserialize(node.node("icon")).createSnapshot())
-                : Optional.<ItemStackSnapshot>empty();
-            var keys = new ArrayList<Tuple<? extends Key, Integer>>();
-            for (ConfigurationNode key : node.node("keys").childrenList()) {
-                var component = key.isList() ? key.node(0) : key;
-                var values = key.childrenList().subList(key.isList() ? 1 : 0, key.childrenList().size());
-                keys.add(Config.resolveKeyType(component).deserializeReference(component, values));
-            }
-            var rewards = new ArrayList<Tuple<? extends Reward, BigDecimal>>();
-            for (ConfigurationNode reward : node.node("rewards").childrenList()) {
-                var component = reward.isList() ? reward.node(0) : reward;
-                var values = reward.childrenList().subList(reward.isList() ? 1 : 0, reward.childrenList().size());
-                rewards.add(Config.resolveRewardType(component).deserializeReference(component, values));
-            }
-            return new Crate(String.valueOf(node.key()), name, lore, icon, ImmutableList.copyOf(keys), ImmutableList.copyOf(rewards));
+            Optional<String> name = Optional.ofNullable(node.getNode("name").getString());
+            Optional<ImmutableList<String>> lore = node.getNode("lore").isList()
+                ? Optional.of(node.getChildrenList().stream()
+                    .map(s -> s.getString(""))
+                    .collect(ImmutableList.toImmutableList())
+                )
+                : Optional.empty();
+            Optional<ItemStackSnapshot> icon = !node.getNode("icon").isVirtual()
+                ? Optional.of(Serializers.ITEM_STACK.deserialize(node.getNode("icon")).createSnapshot())
+                : Optional.empty();
+            ImmutableList<Tuple<? extends Key, Integer>> keys = node.getNode("keys").getChildrenList().stream()
+                .map(n -> {
+                    ConfigurationNode component = n.isList() ? n.getNode(0) : n;
+                    List<? extends ConfigurationNode> values = n.getChildrenList().subList(n.isList() ? 1 : 0, n.getChildrenList().size());
+                    return Config.resolveKeyType(component).deserializeReference(component, values);
+                })
+                .collect(ImmutableList.toImmutableList());
+            ImmutableList<Tuple<? extends Reward, BigDecimal>> rewards = node.getNode("rewards").getChildrenList().stream()
+                .map(n -> {
+                    ConfigurationNode component = n.isList() ? n.getNode(0) : n;
+                    List<? extends ConfigurationNode> values = n.getChildrenList().subList(n.isList() ? 1 : 0, n.getChildrenList().size());
+                    return Config.resolveRewardType(component).deserializeReference(component, values);
+                })
+                .collect(ImmutableList.toImmutableList());
+            return new Crate(String.valueOf(node.getKey()), name, lore, icon, ImmutableList.copyOf(keys), ImmutableList.copyOf(rewards));
         }
 
         @Override

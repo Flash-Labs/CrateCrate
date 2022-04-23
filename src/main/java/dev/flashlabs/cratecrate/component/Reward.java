@@ -4,23 +4,21 @@ import com.google.common.collect.ImmutableList;
 import dev.flashlabs.cratecrate.CrateCrate;
 import dev.flashlabs.cratecrate.component.prize.Prize;
 import dev.flashlabs.cratecrate.internal.Config;
+import dev.flashlabs.cratecrate.internal.SerializationException;
 import dev.flashlabs.cratecrate.internal.Serializers;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
-import org.spongepowered.api.data.Keys;
+import ninja.leaping.configurate.ConfigurationNode;
+import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.item.ItemTypes;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.item.inventory.ItemStackSnapshot;
+import org.spongepowered.api.text.Text;
+import org.spongepowered.api.text.serializer.TextSerializers;
 import org.spongepowered.api.util.Tuple;
-import org.spongepowered.configurate.ConfigurationNode;
-import org.spongepowered.configurate.serialize.SerializationException;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public final class Reward extends Component<BigDecimal> {
 
@@ -52,13 +50,13 @@ public final class Reward extends Component<BigDecimal> {
      * prizes exist). The reference value is currently unused.
      */
     @Override
-    public net.kyori.adventure.text.Component name(Optional<BigDecimal> unused) {
+    public Text name(Optional<BigDecimal> unused) {
         if (name.isPresent()) {
-            return LegacyComponentSerializer.legacyAmpersand().deserialize(name.get());
+            return TextSerializers.FORMATTING_CODE.deserialize(name.get());
         } else if (prizes.size() == 1) {
-            return prizes.get(0).first().name(Optional.of(prizes.get(0).second()));
+            return prizes.get(0).getFirst().name(Optional.of(prizes.get(0).getSecond()));
         } else {
-            return net.kyori.adventure.text.Component.text(id);
+            return Text.of(id);
         }
     }
 
@@ -69,16 +67,20 @@ public final class Reward extends Component<BigDecimal> {
      * {@code ${weight}}.
      */
     @Override
-    public List<net.kyori.adventure.text.Component> lore(Optional<BigDecimal> weight) {
+    public List<Text> lore(Optional<BigDecimal> weight) {
         if (lore.isPresent()) {
-            return lore.get().stream().map(s -> {
-                s = s.replaceAll("\\$\\{weight}", weight.map(String::valueOf).orElse("${weight}"));
-                return LegacyComponentSerializer.legacyAmpersand().deserialize(s).asComponent();
-            }).toList();
+            return lore.get().stream()
+                .map(s -> {
+                    s = s.replaceAll("\\$\\{weight}", weight.map(String::valueOf).orElse("${weight}"));
+                    return TextSerializers.FORMATTING_CODE.deserialize(s);
+                })
+                .collect(Collectors.toList());
         } else if (prizes.size() == 1) {
-            return prizes.get(0).first().lore(Optional.of(prizes.get(0).second()));
+            return prizes.get(0).getFirst().lore(Optional.of(prizes.get(0).getSecond()));
         } else {
-            return prizes.stream().map(p -> p.first().name(Optional.of(p.second()))).toList();
+            return prizes.stream()
+                .map(p -> p.getFirst().name(Optional.of(p.getSecond())))
+                .collect(Collectors.toList());
         }
     }
 
@@ -90,18 +92,18 @@ public final class Reward extends Component<BigDecimal> {
      */
     @Override
     public ItemStack icon(Optional<BigDecimal> weight) {
-        var base = icon.map(ItemStackSnapshot::createStack).orElseGet(() -> {
+        ItemStack base = icon.map(ItemStackSnapshot::createStack).orElseGet(() -> {
             if (prizes.size() == 1) {
-                return prizes.get(0).first().icon(Optional.of(prizes.get(0).second()));
+                return prizes.get(0).getFirst().icon(Optional.of(prizes.get(0).getSecond()));
             } else {
                 return ItemStack.of(ItemTypes.BOOK, 1);
             }
         });
-        if (base.get(Keys.CUSTOM_NAME).isEmpty()) {
-            base.offer(Keys.CUSTOM_NAME, name(weight));
+        if (!base.get(Keys.DISPLAY_NAME).isPresent()) {
+            base.offer(Keys.DISPLAY_NAME, name(weight));
         }
-        if (base.get(Keys.LORE).isEmpty()) {
-            base.offer(Keys.LORE, lore(weight));
+        if (!base.get(Keys.ITEM_LORE).isPresent()) {
+            base.offer(Keys.ITEM_LORE, lore(weight));
         }
         return base;
     }
@@ -111,13 +113,14 @@ public final class Reward extends Component<BigDecimal> {
     }
 
     public boolean give(User user) {
-        return prizes.stream().allMatch(p -> p.first().give(user, p.second()));
+        //TODO: Error handling
+        return prizes.stream().allMatch(p -> p.getFirst().give(user, p.getSecond()));
     }
 
     public static final class RewardType extends Type<Reward, BigDecimal> {
 
         public RewardType() {
-            super("Reward", CrateCrate.container());
+            super("Reward", CrateCrate.getContainer());
         }
 
         @Override
@@ -138,20 +141,24 @@ public final class Reward extends Component<BigDecimal> {
          */
         @Override
         public Reward deserializeComponent(ConfigurationNode node) throws SerializationException {
-            var name = Optional.ofNullable(node.node("name").get(String.class));
-            var lore = node.node("lore").isList()
-                ? Optional.ofNullable(node.node("lore").getList(String.class)).map(ImmutableList::copyOf)
-                : Optional.<ImmutableList<String>>empty();
-            var icon = node.hasChild("icon")
-                ? Optional.of(Serializers.ITEM_STACK.deserialize(node.node("icon")).createSnapshot())
-                : Optional.<ItemStackSnapshot>empty();
-            var prizes = new ArrayList<Tuple<? extends Prize, ?>>();
-            for (ConfigurationNode prize : node.node("prizes").childrenList()) {
-                var component = prize.isList() ? prize.node(0) : prize;
-                var values = prize.childrenList().subList(prize.isList() ? 1 : 0, prize.childrenList().size());
-                prizes.add(Config.resolvePrizeType(component).deserializeReference(component, values));
-            }
-            return new Reward(String.valueOf(node.key()), name, lore, icon, ImmutableList.copyOf(prizes));
+            Optional<String> name = Optional.ofNullable(node.getNode("name").getString());
+            Optional<ImmutableList<String>> lore = node.getNode("lore").isList()
+                ? Optional.of(node.getChildrenList().stream()
+                    .map(s -> s.getString(""))
+                    .collect(ImmutableList.toImmutableList())
+                )
+                : Optional.empty();
+            Optional<ItemStackSnapshot> icon = !node.getNode("icon").isVirtual()
+                ? Optional.of(Serializers.ITEM_STACK.deserialize(node.getNode("icon")).createSnapshot())
+                : Optional.empty();
+            ImmutableList<Tuple<? extends Prize, ?>> prizes = node.getNode("prizes").getChildrenList().stream()
+                .map(n -> {
+                    ConfigurationNode component = n.isList() ? n.getNode(0) : n;
+                    List<? extends ConfigurationNode> values = n.getChildrenList().subList(n.isList() ? 1 : 0, n.getChildrenList().size());
+                    return Config.resolvePrizeType(component).deserializeReference(component, values);
+                })
+                .collect(ImmutableList.toImmutableList());
+            return new Reward(String.valueOf(node.getKey()), name, lore, icon, ImmutableList.copyOf(prizes));
         }
 
         @Override
@@ -178,26 +185,26 @@ public final class Reward extends Component<BigDecimal> {
         public Tuple<Reward, BigDecimal> deserializeReference(ConfigurationNode node, List<? extends ConfigurationNode> values) throws SerializationException {
             Reward reward;
             if (node.isMap()) {
-                if (node.hasChild("prizes")) {
+                if (!node.getNode("prizes").isVirtual()) {
                     reward = deserializeComponent(node);
-                    reward = new Reward("Reward@" + node.path(), reward.name, reward.lore, reward.icon, reward.prizes);
+                    reward = new Reward("Reward@" + Arrays.toString(node.getPath()), reward.name, reward.lore, reward.icon, reward.prizes);
                 } else {
-                    var prize = Config.resolvePrizeType(node).deserializeReference(node, values.subList(0, values.isEmpty() ? 0 : values.size() - 1));
-                    reward = new Reward("Reward@" + node.path(), Optional.empty(), Optional.empty(), Optional.empty(), ImmutableList.of(prize));
+                    Tuple<? extends Prize, ?> prize = Config.resolvePrizeType(node).deserializeReference(node, values.subList(0, values.isEmpty() ? 0 : values.size() - 1));
+                    reward = new Reward("Reward@" + Arrays.toString(node.getPath()), Optional.empty(), Optional.empty(), Optional.empty(), ImmutableList.of(prize));
                 }
                 Config.REWARDS.put(reward.id, reward);
             } else {
-                var identifier = Optional.ofNullable(node.getString()).orElse("");
+                String identifier = Optional.ofNullable(node.getString()).orElse("");
                 if (Config.REWARDS.containsKey(identifier)) {
                     reward = Config.REWARDS.get(identifier);
                 } else {
-                    var prize = Config.resolvePrizeType(node).deserializeReference(node, values.subList(0, values.isEmpty() ? 0 : values.size() - 1));
+                    Tuple<? extends Prize, ?> prize = Config.resolvePrizeType(node).deserializeReference(node, values.subList(0, values.isEmpty() ? 0 : values.size() - 1));
                     reward = new Reward(identifier, Optional.empty(), Optional.empty(), Optional.empty(), ImmutableList.of(prize));
                     Config.REWARDS.put(reward.id, reward);
                 }
             }
             //TODO: Validate reference value counts and existence
-            var value = new BigDecimal((!values.isEmpty() ? values.get(0) : node.node("weight")).getString());
+            BigDecimal value = new BigDecimal((!values.isEmpty() ? values.get(0) : node.getNode("weight")).getString());
             return Tuple.of(reward, value);
         }
 

@@ -1,34 +1,37 @@
 package dev.flashlabs.cratecrate.command.location;
 
 import dev.flashlabs.cratecrate.internal.Storage;
-import net.kyori.adventure.identity.Identity;
-import net.kyori.adventure.text.Component;
-import org.spongepowered.api.command.Command;
+import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;
-import org.spongepowered.api.command.exception.CommandException;
-import org.spongepowered.api.command.parameter.CommandContext;
-import org.spongepowered.api.command.parameter.Parameter;
-import org.spongepowered.api.world.server.ServerLocation;
+import org.spongepowered.api.command.CommandSource;
+import org.spongepowered.api.command.args.CommandContext;
+import org.spongepowered.api.command.args.GenericArguments;
+import org.spongepowered.api.command.spec.CommandSpec;
+import org.spongepowered.api.text.Text;
+import org.spongepowered.api.world.Location;
+import org.spongepowered.api.world.World;
 
 import java.sql.SQLException;
 
 public final class Delete {
 
-    public static Command.Parameterized COMMAND = Command.builder()
+    public static CommandSpec COMMAND = CommandSpec.builder()
         .permission("cratecrate.command.location.delete.base")
-        .addParameter(Parameter.location().key("location").build())
+        .arguments(
+            GenericArguments.location(Text.of("location"))
+        )
         .executor(Delete::execute)
         .build();
 
-    private static CommandResult execute(CommandContext context) throws CommandException {
-        var location = context.requireOne(Parameter.key("location", ServerLocation.class));
-        location = location.withBlockPosition(location.blockPosition());
+    private static CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
+        Location<World> location = args.requireOne("location");
+        location = new Location<>(location.getExtent(), location.getBlockPosition());
         try {
             Storage.deleteLocation(location);
             Storage.LOCATIONS.remove(location);
-            context.sendMessage(Identity.nil(), Component.text("Successfully deleted location."));
+            src.sendMessage(Text.of("Successfully deleted location."));
         } catch (SQLException e) {
-            throw new CommandException(Component.text("Error deleting location: " + e.getMessage()));
+            throw new CommandException(Text.of("Error deleting location: " + e.getMessage()));
         }
         return CommandResult.success();
     }

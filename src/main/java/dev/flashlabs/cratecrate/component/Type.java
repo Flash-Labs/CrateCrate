@@ -1,9 +1,9 @@
 package dev.flashlabs.cratecrate.component;
 
+import dev.flashlabs.cratecrate.internal.SerializationException;
+import ninja.leaping.configurate.ConfigurationNode;
+import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.api.util.Tuple;
-import org.spongepowered.configurate.ConfigurationNode;
-import org.spongepowered.configurate.serialize.SerializationException;
-import org.spongepowered.plugin.PluginContainer;
 
 import java.util.List;
 

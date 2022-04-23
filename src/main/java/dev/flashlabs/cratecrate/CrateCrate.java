@@ -14,16 +14,14 @@ import dev.flashlabs.cratecrate.internal.Config;
 import dev.flashlabs.cratecrate.internal.Listeners;
 import dev.flashlabs.cratecrate.internal.Storage;
 import org.spongepowered.api.Sponge;
-import org.spongepowered.api.command.Command;
 import org.spongepowered.api.event.Listener;
-import org.spongepowered.api.event.lifecycle.ConstructPluginEvent;
-import org.spongepowered.api.event.lifecycle.LoadedGameEvent;
-import org.spongepowered.api.event.lifecycle.RefreshGameEvent;
-import org.spongepowered.api.event.lifecycle.RegisterCommandEvent;
-import org.spongepowered.plugin.PluginContainer;
-import org.spongepowered.plugin.builtin.jvm.Plugin;
+import org.spongepowered.api.event.game.GameReloadEvent;
+import org.spongepowered.api.event.game.state.GameInitializationEvent;
+import org.spongepowered.api.event.game.state.GameStartedServerEvent;
+import org.spongepowered.api.plugin.Plugin;
+import org.spongepowered.api.plugin.PluginContainer;
 
-@Plugin("cratecrate")
+@Plugin(id = "cratecrate")
 public final class CrateCrate {
 
     private static CrateCrate instance;
@@ -37,7 +35,7 @@ public final class CrateCrate {
     }
 
     @Listener
-    public void onConstruct(ConstructPluginEvent event) {
+    public void onInitialize(GameInitializationEvent event) {
         Crate.TYPES.put(Crate.TYPE.name(), Crate.TYPE);
         Crate.TYPES.put(Crate.class.getName(), Crate.TYPE);
         Reward.TYPES.put(Reward.TYPE.name(), Reward.TYPE);
@@ -50,27 +48,23 @@ public final class CrateCrate {
         Prize.TYPES.put(MoneyPrize.class.getName(), MoneyPrize.TYPE);
         Key.TYPES.put(StandardKey.TYPE.name(), StandardKey.TYPE);
         Key.TYPES.put(StandardKey.class.getName(), StandardKey.TYPE);
-        Sponge.eventManager().registerListeners(container, new Listeners());
+        Sponge.getEventManager().registerListeners(container, new Listeners());
+        Sponge.getCommandManager().register(container, Base.COMMAND, "cratecrate", "crate");
     }
 
     @Listener
-    public void onLoaded(LoadedGameEvent event) {
+    public void onLoaded(GameStartedServerEvent event) {
         Config.load();
         Storage.load();
     }
 
     @Listener
-    public void onRefresh(RefreshGameEvent event) {
+    public void onRefresh(GameReloadEvent event) {
         Config.load();
         Storage.load();
     }
 
-    @Listener
-    public void onRegisterCommands(RegisterCommandEvent<Command.Parameterized> event) {
-        event.register(CrateCrate.container(), Base.COMMAND, "cratecrate", "crate");
-    }
-
-    public static PluginContainer container() {
+    public static PluginContainer getContainer() {
         return instance.container;
     }
 

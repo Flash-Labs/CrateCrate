@@ -1,0 +1,53 @@
+plugins {
+    id("java-library")
+    id("org.spongepowered.plugin") version "0.9.0"
+}
+
+group = "dev.flashlabs.cratecrate"
+version = "0.0.2"
+
+ext.spongeapiVersion = "7.4.0"
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation("org.spongepowered:spongeapi:${spongeapiVersion}")
+}
+
+//Sets plugin metadata through Gradle build instead of the @Plugin annotation.
+sponge {
+    plugin {
+        meta {
+            name = "CrateCrate"
+            description = "The cratest crate plugin of all time"
+            url = "https://github.com/flash-labs/CrateCrate"
+        }
+    }
+}
+
+jar.version = "v${version}"
+
+//Produces a sources jar for providing source to consumers.
+task sourcesJar(type: Jar, dependsOn: classes) {
+    from sourceSets.main.allSource
+    version = "v$version"
+    classifier = "sources"
+}
+
+//Produces a javadoc jar for rendering javadoc documentation.
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    from javadoc.destinationDir
+    version = "v$version"
+    classifier = "javadoc"
+}
+
+//Includes custom jars in published artifacts for external access.
+artifacts.archives (sourcesJar, javadocJar)
+
+//Copies produced jar files into a project folder for releases by version.
+task copyJars(type: Copy) {
+    from (jar, sourcesJar, javadocJar) into project.file("releases/${version}")
+}
+build.dependsOn(copyJars)

@@ -2,44 +2,36 @@ package dev.flashlabs.cratecrate.command.key;
 
 import dev.flashlabs.cratecrate.component.key.Key;
 import dev.flashlabs.cratecrate.internal.Config;
-import net.kyori.adventure.identity.Identity;
-import net.kyori.adventure.text.Component;
-import org.spongepowered.api.Sponge;
-import org.spongepowered.api.command.Command;
+import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;
-import org.spongepowered.api.command.exception.CommandException;
-import org.spongepowered.api.command.parameter.CommandContext;
-import org.spongepowered.api.command.parameter.Parameter;
-
-import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.ExecutionException;
+import org.spongepowered.api.command.CommandSource;
+import org.spongepowered.api.command.args.CommandContext;
+import org.spongepowered.api.command.args.GenericArguments;
+import org.spongepowered.api.command.spec.CommandSpec;
+import org.spongepowered.api.entity.living.player.User;
+import org.spongepowered.api.text.Text;
 
 public final class Give {
 
-    public static Command.Parameterized COMMAND = Command.builder()
+    public static CommandSpec COMMAND = CommandSpec.builder()
         .permission("cratecrate.command.key.give.base")
-        .addParameter(Parameter.user().key("user").build())
-        .addParameter(Parameter.choices(Key.class, Config.KEYS::get, Config.KEYS::keySet).key("key").build())
-        .addParameter(Parameter.rangedInteger(1, Integer.MAX_VALUE).key("quantity").build())
+        .arguments(
+            GenericArguments.userOrSource(Text.of("user")),
+            GenericArguments.choices(Text.of("key"), Config.KEYS::keySet, Config.KEYS::get),
+            GenericArguments.integer(Text.of("quantity"))
+        )
         .executor(Give::execute)
         .build();
 
-    private static CommandResult execute(CommandContext context) throws CommandException {
-        var uuid = context.requireOne(Parameter.key("user", UUID.class));
-        var key = context.requireOne(Parameter.key("key", Key.class));
-        var value = context.requireOne(Parameter.key("quantity", Integer.class));
-        try {
-            var user = Sponge.server().userManager().load(uuid).get()
-                .orElseThrow(() -> new CommandException(Component.text("Invalid user.")));
-            if (key.give(user, value)) {
-                context.sendMessage(Identity.nil(), Component.text("Successfully gave key."));
-            } else {
-                throw new CommandException(Component.text("Failed to give key."));
-            }
-        } catch (InterruptedException | ExecutionException e) {
-            throw new CommandException(Component.text("Unable to load user."));
+    private static CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
+        User user = args.requireOne("user");
+        Key key = args.requireOne("key");
+        int quantity = args.requireOne("quantity");
+        //TODO: Other users
+        if (!key.give(user, quantity)) {
+            throw new CommandException(Text.of("Failed to give key."));
         }
+        src.sendMessage(Text.of("Successfully gave key."));
         return CommandResult.success();
     }
 

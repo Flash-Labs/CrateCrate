@@ -7,21 +7,16 @@ import dev.flashlabs.cratecrate.component.Reward;
 import dev.flashlabs.cratecrate.component.Type;
 import dev.flashlabs.cratecrate.component.key.Key;
 import dev.flashlabs.cratecrate.component.prize.Prize;
+import ninja.leaping.configurate.ConfigurationNode;
+import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
 import org.spongepowered.api.Sponge;
-import org.spongepowered.configurate.ConfigurationNode;
-import org.spongepowered.configurate.hocon.HoconConfigurationLoader;
-import org.spongepowered.configurate.serialize.SerializationException;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.net.URI;
-import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public final class Config {
 
@@ -30,91 +25,90 @@ public final class Config {
     public static final Map<String, Prize> PRIZES = new HashMap<>();
     public static final Map<String, Key> KEYS = new HashMap<>();
 
-    private static final Path DIRECTORY = Sponge.configManager()
-        .pluginConfig(CrateCrate.container())
-        .directory();
+    private static final Path DIRECTORY = Sponge.getConfigManager()
+        .getPluginConfig(CrateCrate.getContainer())
+        .getDirectory();
 
     public static void load() {
         try {
             Files.createDirectories(DIRECTORY.resolve("config"));
-            var main = load("cratecrate.conf");
-            var keys = load("config/keys.conf");
-            for (ConfigurationNode node : keys.childrenMap().values()) {
-                Key key = resolveKeyType(node).deserializeComponent(node);
+            ConfigurationNode main = load("cratecrate.conf");
+            ConfigurationNode keys = load("config/keys.conf");
+            ConfigurationNode prizes = load("config/prizes.conf");
+            ConfigurationNode rewards = load("config/rewards.conf");
+            ConfigurationNode crates = load("config/crates.conf");
+            keys.getChildrenMap().values().forEach(n -> {
+                Key key = resolveKeyType(n).deserializeComponent(n);
                 KEYS.put(key.id(), key);
-            }
-            var prizes = load("config/prizes.conf");
-            for (ConfigurationNode node : prizes.childrenMap().values()) {
-                Prize prize = resolvePrizeType(node).deserializeComponent(node);
+            });
+            prizes.getChildrenMap().values().forEach(n -> {
+                Prize prize = resolvePrizeType(n).deserializeComponent(n);
                 PRIZES.put(prize.id(), prize);
-            }
-            var rewards = load("config/rewards.conf");
-            for (ConfigurationNode node : rewards.childrenMap().values()) {
-                Reward reward = resolveRewardType(node).deserializeComponent(node);
+            });
+            rewards.getChildrenMap().values().forEach(n -> {
+                Reward reward = resolveRewardType(n).deserializeComponent(n);
                 REWARDS.put(reward.id(), reward);
-            }
-            var crates = load("config/crates.conf");
-            for (ConfigurationNode node : crates.childrenMap().values()) {
-                Crate crate = resolveCrateType(node).deserializeComponent(node);
+            });
+            crates.getChildrenMap().values().forEach(n -> {
+                Crate crate = resolveCrateType(n).deserializeComponent(n);
                 CRATES.put(crate.id(), crate);
-            }
-            CrateCrate.container().logger().info("Successfully loaded the config.");
+            });
+            CrateCrate.getContainer().getLogger().info("Successfully loaded the config.");
         } catch (IOException e) {
-            CrateCrate.container().logger().error("Error loading the config: ", e);
+            CrateCrate.getContainer().getLogger().error("Error loading the config: ", e);
+        } catch (SerializationException e) {
+            CrateCrate.getContainer().getLogger().error("Error loading the config @" + Arrays.toString(e.getNode().getPath()) + ": " + e.getMessage());
         }
     }
 
     private static ConfigurationNode load(String name) throws IOException {
         Path path = DIRECTORY.resolve(name);
-        if (Files.notExists(path)) {
-            Files.copy(CrateCrate.container().openResource(URI.create("assets/cratecrate/"  + name)).get(), path);
-        }
-        return HoconConfigurationLoader.builder().path(path).build().load();
+        Sponge.getAssetManager().getAsset(CrateCrate.getContainer(), name).get().copyToFile(path);
+        return HoconConfigurationLoader.builder().setPath(path).build().load();
     }
 
     public static Type<? extends Crate, Void> resolveCrateType(ConfigurationNode node) throws SerializationException {
-        return (Type<? extends Crate, Void>) Config.<Crate>resolveType(node, Crate.class, Crate.TYPES, CRATES);
+        return (Type<? extends Crate, Void>) Config.<Crate>resolveType(node, Crate.TYPES, CRATES);
     }
 
     public static Type<? extends Reward, BigDecimal> resolveRewardType(ConfigurationNode node) throws SerializationException {
-        return (Type<? extends Reward, BigDecimal>) Config.<Reward>resolveType(node, Reward.class, Reward.TYPES, REWARDS);
+        return (Type<? extends Reward, BigDecimal>) Config.<Reward>resolveType(node, Reward.TYPES, REWARDS);
     }
 
     public static Type<? extends Prize, ?> resolvePrizeType(ConfigurationNode node) throws SerializationException {
-        return Config.<Prize>resolveType(node, Prize.class, Prize.TYPES, PRIZES);
+        return Config.<Prize>resolveType(node, Prize.TYPES, PRIZES);
     }
 
     public static Type<? extends Key, Integer> resolveKeyType(ConfigurationNode node) throws SerializationException {
-        return (Type<? extends Key, Integer>) Config.<Key>resolveType(node, Key.class, Key.TYPES, KEYS);
+        return (Type<? extends Key, Integer>) Config.<Key>resolveType(node, Key.TYPES, KEYS);
     }
 
     private static <T extends Component> Type<? extends T, ?> resolveType(
         ConfigurationNode node,
-        Class<T> component,
         Map<String, Type<? extends T, ?>> types,
         Map<String, T> registry
     ) throws SerializationException {
-        var identifier = Optional.ofNullable(node.getString()).orElse("");
+        String identifier = Optional.ofNullable(node.getString()).orElse("");
         if (registry.containsKey(identifier)) {
             return types.get(registry.get(identifier).getClass().getName());
         }
-        if (node.hasChild("type")) {
-            var type = node.node("type").getString();
+        if (!node.getNode("type").isVirtual()) {
+            String type = node.getNode("type").getString();
             if (!types.containsKey(type)) {
-                throw new SerializationException(node.node("type"), component, "Unknown type " + type + ".");
+                throw new SerializationException(node.getNode("type"), "Unknown type " + type + ".");
             }
             return types.get(type);
         }
-        var matches = types.values().stream()
+        List<Type<? extends T, ?>> matches = types.values().stream()
             .distinct()
             .filter(t -> t.matches(node))
-            .toList();
+            .collect(Collectors.toList());
         switch (matches.size()) {
-            case 0: throw new SerializationException(node, component, "Unable to identify type.");
+            case 0: throw new SerializationException(node, "Unable to identify type.");
             case 1: return matches.get(0);
             default:
-                var names = matches.stream().map(Type::name).toList();
-                throw new SerializationException(node, component, "Node matched multiple types: " + names + ".");
+                List<String> names = matches.stream().map(Type::name).collect(Collectors.toList());
+                throw new SerializationException(node, "Node matched multiple types: " + names + ".");
         }
     }
 

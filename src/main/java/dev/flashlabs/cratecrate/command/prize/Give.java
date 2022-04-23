@@ -5,55 +5,48 @@ import dev.flashlabs.cratecrate.component.prize.ItemPrize;
 import dev.flashlabs.cratecrate.component.prize.MoneyPrize;
 import dev.flashlabs.cratecrate.component.prize.Prize;
 import dev.flashlabs.cratecrate.internal.Config;
-import io.leangen.geantyref.TypeToken;
-import net.kyori.adventure.identity.Identity;
-import net.kyori.adventure.text.Component;
-import org.spongepowered.api.Sponge;
-import org.spongepowered.api.command.Command;
+import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;
-import org.spongepowered.api.command.exception.CommandException;
-import org.spongepowered.api.command.parameter.CommandContext;
-import org.spongepowered.api.command.parameter.Parameter;
+import org.spongepowered.api.command.CommandSource;
+import org.spongepowered.api.command.args.CommandContext;
+import org.spongepowered.api.command.args.GenericArguments;
+import org.spongepowered.api.command.spec.CommandSpec;
+import org.spongepowered.api.entity.living.player.User;
+import org.spongepowered.api.text.Text;
 
 import java.math.BigDecimal;
-import java.util.UUID;
-import java.util.concurrent.ExecutionException;
+import java.util.Optional;
 
 public final class Give {
 
-    public static Command.Parameterized COMMAND = Command.builder()
+    public static CommandSpec COMMAND = CommandSpec.builder()
         .permission("cratecrate.command.prize.give.base")
-        .addParameter(Parameter.user().key("user").build())
-        .addParameter(Parameter.choices(Prize.class, Config.PRIZES::get, Config.PRIZES::keySet).key("prize").build())
-        .addParameter(Parameter.remainingJoinedStrings().optional().key("value").build())
+        .arguments(
+            GenericArguments.userOrSource(Text.of("user")),
+            GenericArguments.choices(Text.of("prize"), Config.PRIZES::keySet, Config.PRIZES::get),
+            GenericArguments.optional(GenericArguments.remainingJoinedStrings(Text.of("value")))
+        )
         .executor(Give::execute)
         .build();
 
-    private static CommandResult execute(CommandContext context) throws CommandException {
-        var uuid = context.requireOne(Parameter.key("user", UUID.class));
-        var prize = context.requireOne(Parameter.key("prize", TypeToken.get(Prize.class)));
-        var value = context.one(Parameter.key("value", String.class));
-        try {
-            var user = Sponge.server().userManager().load(uuid).get()
-                .orElseThrow(() -> new CommandException(Component.text("Invalid user.")));
-            boolean result;
-            if (prize instanceof CommandPrize) {
-                result = prize.give(user, value.orElse(""));
-            } else if (prize instanceof ItemPrize) {
-                result = prize.give(user, value.map(Integer::parseInt).orElse(1));
-            } else if (prize instanceof MoneyPrize) {
-                result = prize.give(user, value.map(BigDecimal::new).orElse(BigDecimal.ZERO));
-            } else {
-                throw new AssertionError(prize.getClass().getName());
-            }
-            if (result) {
-                context.sendMessage(Identity.nil(), Component.text("Successfully gave prize."));
-            } else {
-                throw new CommandException(Component.text("Failed to give prize."));
-            }
-        } catch (InterruptedException | ExecutionException e) {
-            throw new CommandException(Component.text("Unable to load user."));
+    private static CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
+        User user = args.requireOne("user");
+        Prize prize = args.requireOne("prize");
+        Optional<String> value = args.getOne("value");
+        boolean result;
+        if (prize instanceof CommandPrize) {
+            result = prize.give(user, value.orElse(""));
+        } else if (prize instanceof ItemPrize) {
+            result = prize.give(user, value.map(Integer::parseInt).orElse(1));
+        } else if (prize instanceof MoneyPrize) {
+            result = prize.give(user, value.map(BigDecimal::new).orElse(BigDecimal.ZERO));
+        } else {
+            throw new AssertionError(prize.getClass().getName());
         }
+        if (!result) {
+            throw new CommandException(Text.of("Failed to give prize."));
+        }
+        src.sendMessage(Text.of("Successfully gave prize."));
         return CommandResult.success();
     }
 

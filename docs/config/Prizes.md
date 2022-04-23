@@ -180,7 +180,7 @@ If `name`/`lore`/`icon` are also unspecified, prefer using an inline
 | `lore` | List<Text> | The prize lore, inherited from Component | The `item`s lore if specified, else an empty list |
 | `icon` | Item | The prize icon, inherited from Component | The `item` with the above `name`/`lore` if not specified |
 | |
-| `type` | String | The item type, in the form `<namespace>:<id>` | Required |
+| `type` | String | The item type, in the form `<namespace>:<id>` with an optional `/<data>` suffix | Required |
 | `name` | Text | The item name, which applies to the item given to the user | The item type (default item name) |
 | `lore` | List<Text> | The item lore, which applies to the item given to the user | An empty list |
 | `enchantments` | List<[EnchantmentType, Integer]> | The item enchantments, which is a list of `["<enchantment-type>"`, `level]` pairs | An empty list |
