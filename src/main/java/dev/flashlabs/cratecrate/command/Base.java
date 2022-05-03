@@ -7,35 +7,31 @@ import dev.flashlabs.cratecrate.command.key.Key;
 import dev.flashlabs.cratecrate.command.location.Location;
 import dev.flashlabs.cratecrate.command.prize.Prize;
 import dev.flashlabs.cratecrate.command.reward.Reward;
+import dev.flashlabs.flashlibs.command.Command;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.args.CommandContext;
-import org.spongepowered.api.command.spec.CommandSpec;
 import org.spongepowered.api.text.Text;
-import org.spongepowered.api.text.action.ClickAction;
 import org.spongepowered.api.text.action.TextActions;
 import org.spongepowered.api.text.format.TextStyles;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.List;
 
-public final class Base {
+public final class Base extends Command {
 
-    public static CommandSpec COMMAND = CommandSpec.builder()
-        .permission("cratecrate.command.base")
-        .child(Crate.COMMAND, "crate")
-        .child(Reward.COMMAND, "reward")
-        .child(Prize.COMMAND, "prize")
-        .child(Key.COMMAND, "key")
-        .child(Location.COMMAND, "location")
-        .executor(Base::execute)
-        .build();
+    private Base(Builder builder) {
+        super(builder
+            .aliases("/cratecrate", "/crate")
+            .permission("cratecrate.command.base")
+            .children(Crate.class, Reward.class, Prize.class, Key.class, Location.class)
+        );
+    }
 
-    private static CommandResult execute(CommandSource src, CommandContext args) {
+    public CommandResult execute(CommandSource src, CommandContext args) {
         try {
             Lists.newArrayList(
-                Text.of("CrateCrate v", CrateCrate.getContainer().getVersion()),
+                Text.of("CrateCrate v", CrateCrate.get().getContainer().getVersion()),
                 Text.of("GitHub: ", Text.builder("https://github.com/flash-labs/CrateCrate")
                     .style(TextStyles.UNDERLINE)
                     .onClick(TextActions.openUrl(new URL("https://github.com/flash-labs/CrateCrate")))
@@ -44,7 +40,7 @@ public final class Base {
                     .style(TextStyles.UNDERLINE)
                     .onClick(TextActions.openUrl(new URL("https://discord.gg/zWqnAa9KRn")))
                 )
-            ).forEach(m -> src.sendMessage(m));
+            ).forEach(src::sendMessage);
         } catch (MalformedURLException ignored) {}
         return CommandResult.success();
     }

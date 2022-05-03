@@ -99,7 +99,7 @@ public final class ItemPrize extends Prize<Integer> {
         if (result.getType() == InventoryTransactionResult.Type.SUCCESS) {
             return true;
         } else {
-            CrateCrate.getContainer().getLogger().error("Failed to give item: " + result.getType().name());
+            CrateCrate.get().getContainer().getLogger().error("Failed to give item: " + result.getType().name());
             return false;
         }
     }
@@ -107,7 +107,7 @@ public final class ItemPrize extends Prize<Integer> {
     private static final class ItemPrizeType extends Type<ItemPrize, Integer> {
 
         private ItemPrizeType() {
-            super("Item", CrateCrate.getContainer());
+            super("Item", CrateCrate.get().getContainer());
         }
 
         /**

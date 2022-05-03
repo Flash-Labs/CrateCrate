@@ -7,13 +7,18 @@ group = "dev.flashlabs.cratecrate"
 version = "0.0.2"
 
 ext.spongeapiVersion = "7.4.0"
+ext.flashlibsVersion = "0.1.2"
 
 repositories {
     mavenCentral()
+    maven {
+        url 'https://jitpack.io'
+    }
 }
 
 dependencies {
     implementation("org.spongepowered:spongeapi:${spongeapiVersion}")
+    implementation("com.github.Flash-Labs:FlashLibs:v${flashlibsVersion}")
 }
 
 //Sets plugin metadata through Gradle build instead of the @Plugin annotation.
@@ -23,6 +28,11 @@ sponge {
             name = "CrateCrate"
             description = "The cratest crate plugin of all time"
             url = "https://github.com/flash-labs/CrateCrate"
+            dependencies {
+                flashlibs {
+                    version = flashlibsVersion
+                }
+            }
         }
     }
 }

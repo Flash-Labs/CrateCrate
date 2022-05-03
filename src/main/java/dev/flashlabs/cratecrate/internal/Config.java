@@ -26,7 +26,7 @@ public final class Config {
     public static final Map<String, Key> KEYS = new HashMap<>();
 
     private static final Path DIRECTORY = Sponge.getConfigManager()
-        .getPluginConfig(CrateCrate.getContainer())
+        .getPluginConfig(CrateCrate.get().getContainer())
         .getDirectory();
 
     public static void load() {
@@ -53,17 +53,17 @@ public final class Config {
                 Crate crate = resolveCrateType(n).deserializeComponent(n);
                 CRATES.put(crate.id(), crate);
             });
-            CrateCrate.getContainer().getLogger().info("Successfully loaded the config.");
+            CrateCrate.get().getContainer().getLogger().info("Successfully loaded the config.");
         } catch (IOException e) {
-            CrateCrate.getContainer().getLogger().error("Error loading the config: ", e);
+            CrateCrate.get().getContainer().getLogger().error("Error loading the config: ", e);
         } catch (SerializationException e) {
-            CrateCrate.getContainer().getLogger().error("Error loading the config @" + Arrays.toString(e.getNode().getPath()) + ": " + e.getMessage());
+            CrateCrate.get().getContainer().getLogger().error("Error loading the config @" + Arrays.toString(e.getNode().getPath()) + ": " + e.getMessage());
         }
     }
 
     private static ConfigurationNode load(String name) throws IOException {
         Path path = DIRECTORY.resolve(name);
-        Sponge.getAssetManager().getAsset(CrateCrate.getContainer(), name).get().copyToFile(path);
+        Sponge.getAssetManager().getAsset(CrateCrate.get().getContainer(), name).get().copyToFile(path);
         return HoconConfigurationLoader.builder().setPath(path).build().load();
     }
 

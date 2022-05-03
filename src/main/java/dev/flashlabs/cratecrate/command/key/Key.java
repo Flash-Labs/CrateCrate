@@ -1,14 +1,27 @@
 package dev.flashlabs.cratecrate.command.key;
 
-import org.spongepowered.api.command.spec.CommandSpec;
+import com.google.inject.Inject;
+import dev.flashlabs.flashlibs.command.Command;
+import org.spongepowered.api.command.CommandException;
+import org.spongepowered.api.command.CommandResult;
+import org.spongepowered.api.command.CommandSource;
+import org.spongepowered.api.command.args.CommandContext;
 
-public final class Key {
+public final class Key extends Command {
 
-    public static CommandSpec COMMAND = CommandSpec.builder()
-        .permission("cratecrate.command.key.base")
-        .child(Balance.COMMAND, "balance")
-        .child(Give.COMMAND, "give")
-        .child(Take.COMMAND, "take")
-        .build();
+    @Inject
+    private Key(Builder builder) {
+        super(builder
+            .aliases("key")
+            .permission("cratecrate.command.key.base")
+            .children(Give.class, Take.class)
+        );
+    }
+
+    @Override
+    public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
+        src.sendMessage(getSpec().getUsage(src));
+        return CommandResult.success();
+    }
 
 }

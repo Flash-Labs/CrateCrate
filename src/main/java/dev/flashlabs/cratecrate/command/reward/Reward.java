@@ -1,12 +1,27 @@
 package dev.flashlabs.cratecrate.command.reward;
 
-import org.spongepowered.api.command.spec.CommandSpec;
+import com.google.inject.Inject;
+import dev.flashlabs.flashlibs.command.Command;
+import org.spongepowered.api.command.CommandException;
+import org.spongepowered.api.command.CommandResult;
+import org.spongepowered.api.command.CommandSource;
+import org.spongepowered.api.command.args.CommandContext;
 
-public final class Reward {
+public final class Reward extends Command {
 
-    public static CommandSpec COMMAND = CommandSpec.builder()
-        .permission("cratecrate.command.reward.base")
-        .child(Give.COMMAND, "give")
-        .build();
+    @Inject
+    private Reward(Command.Builder builder) {
+        super(builder
+            .aliases("reward")
+            .permission("cratecrate.command.reward.base")
+            .children(Give.class)
+        );
+    }
+
+    @Override
+    public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
+        src.sendMessage(getSpec().getUsage(src));
+        return CommandResult.success();
+    }
 
 }

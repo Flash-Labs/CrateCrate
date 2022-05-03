@@ -13,7 +13,9 @@ import dev.flashlabs.cratecrate.component.prize.Prize;
 import dev.flashlabs.cratecrate.internal.Config;
 import dev.flashlabs.cratecrate.internal.Listeners;
 import dev.flashlabs.cratecrate.internal.Storage;
+import dev.flashlabs.flashlibs.plugin.PluginInstance;
 import org.spongepowered.api.Sponge;
+import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.game.GameReloadEvent;
 import org.spongepowered.api.event.game.state.GameInitializationEvent;
@@ -22,16 +24,14 @@ import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.plugin.PluginContainer;
 
 @Plugin(id = "cratecrate")
-public final class CrateCrate {
+public final class CrateCrate extends PluginInstance {
 
     private static CrateCrate instance;
 
-    private final PluginContainer container;
-
     @Inject
     private CrateCrate(PluginContainer container) {
+        super(container);
         instance = this;
-        this.container = container;
     }
 
     @Listener
@@ -49,7 +49,7 @@ public final class CrateCrate {
         Key.TYPES.put(StandardKey.TYPE.name(), StandardKey.TYPE);
         Key.TYPES.put(StandardKey.class.getName(), StandardKey.TYPE);
         Sponge.getEventManager().registerListeners(container, new Listeners());
-        Sponge.getCommandManager().register(container, Base.COMMAND, "cratecrate", "crate");
+        commands.register(Base.class);
     }
 
     @Listener
@@ -62,10 +62,12 @@ public final class CrateCrate {
     public void onRefresh(GameReloadEvent event) {
         Config.load();
         Storage.load();
+        commands.reload();
+        messages.reload();
     }
 
-    public static PluginContainer getContainer() {
-        return instance.container;
+    public static CrateCrate get() {
+        return instance;
     }
 
 }

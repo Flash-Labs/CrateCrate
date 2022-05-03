@@ -119,7 +119,7 @@ public final class CommandPrize extends Prize<String> {
     private static final class CommandPrizeType extends Type<CommandPrize, String> {
 
         private CommandPrizeType() {
-            super("Command", CrateCrate.getContainer());
+            super("Command", CrateCrate.get().getContainer());
         }
 
         /**

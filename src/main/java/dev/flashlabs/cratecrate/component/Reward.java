@@ -120,7 +120,7 @@ public final class Reward extends Component<BigDecimal> {
     public static final class RewardType extends Type<Reward, BigDecimal> {
 
         public RewardType() {
-            super("Reward", CrateCrate.getContainer());
+            super("Reward", CrateCrate.get().getContainer());
         }
 
         @Override

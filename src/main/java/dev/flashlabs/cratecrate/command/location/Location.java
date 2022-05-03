@@ -1,13 +1,27 @@
 package dev.flashlabs.cratecrate.command.location;
 
-import org.spongepowered.api.command.spec.CommandSpec;
+import com.google.inject.Inject;
+import dev.flashlabs.flashlibs.command.Command;
+import org.spongepowered.api.command.CommandException;
+import org.spongepowered.api.command.CommandResult;
+import org.spongepowered.api.command.CommandSource;
+import org.spongepowered.api.command.args.CommandContext;
 
-public final class Location {
+public final class Location extends Command {
 
-    public static CommandSpec COMMAND = CommandSpec.builder()
-        .permission("cratecrate.command.location.base")
-        .child(Set.COMMAND, "set")
-        .child(Delete.COMMAND, "delete")
-        .build();
+    @Inject
+    private Location(Command.Builder builder) {
+        super(builder
+            .aliases("location")
+            .permission("cratecrate.command.location.base")
+            .children(Set.class, Delete.class)
+        );
+    }
+
+    @Override
+    public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
+        src.sendMessage(getSpec().getUsage(src));
+        return CommandResult.success();
+    }
 
 }

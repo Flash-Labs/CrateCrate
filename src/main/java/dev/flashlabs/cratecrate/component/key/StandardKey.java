@@ -92,7 +92,7 @@ public final class StandardKey extends Key {
         try {
             return Optional.of(Storage.queryKeyQuantity(user, this));
         } catch (SQLException e) {
-            CrateCrate.getContainer().getLogger().error("Error getting key quantity.", e);
+            CrateCrate.get().getContainer().getLogger().error("Error getting key quantity.", e);
             return Optional.empty();
         }
     }
@@ -117,7 +117,7 @@ public final class StandardKey extends Key {
             Storage.updateKeyQuantity(user, this, delta);
             return true;
         } catch (SQLException e) {
-            CrateCrate.getContainer().getLogger().error("Error getting key quantity.", e);
+            CrateCrate.get().getContainer().getLogger().error("Error getting key quantity.", e);
             return false;
         }
     }
@@ -125,7 +125,7 @@ public final class StandardKey extends Key {
     private static final class StandardKeyType extends Type<StandardKey, Integer> {
 
         private StandardKeyType() {
-            super("Standard", CrateCrate.getContainer());
+            super("Standard", CrateCrate.get().getContainer());
         }
 
         @Override

@@ -121,7 +121,7 @@ public final class MoneyPrize extends Prize<BigDecimal> {
     private static final class MoneyPrizeType extends Type<MoneyPrize, BigDecimal> {
 
         private MoneyPrizeType() {
-            super("Money", CrateCrate.getContainer());
+            super("Money", CrateCrate.get().getContainer());
         }
 
         /**

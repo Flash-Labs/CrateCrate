@@ -1,12 +1,27 @@
 package dev.flashlabs.cratecrate.command.prize;
 
-import org.spongepowered.api.command.spec.CommandSpec;
+import com.google.inject.Inject;
+import dev.flashlabs.flashlibs.command.Command;
+import org.spongepowered.api.command.CommandException;
+import org.spongepowered.api.command.CommandResult;
+import org.spongepowered.api.command.CommandSource;
+import org.spongepowered.api.command.args.CommandContext;
 
-public final class Prize {
+public final class Prize extends Command {
 
-    public static CommandSpec COMMAND = CommandSpec.builder()
-        .permission("cratecrate.command.prize.base")
-        .child(Give.COMMAND, "give")
-        .build();
+    @Inject
+    private Prize(Command.Builder builder) {
+        super(builder
+            .aliases("prize")
+            .permission("cratecrate.command.prize.base")
+            .children(Give.class)
+        );
+    }
+
+    @Override
+    public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
+        src.sendMessage(getSpec().getUsage(src));
+        return CommandResult.success();
+    }
 
 }

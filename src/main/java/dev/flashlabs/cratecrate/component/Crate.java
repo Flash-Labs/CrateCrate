@@ -129,7 +129,7 @@ public final class Crate extends Component<Void> {
     public static final class CrateType extends Type<Crate, Void> {
 
         private CrateType() {
-            super("Crate", CrateCrate.getContainer());
+            super("Crate", CrateCrate.get().getContainer());
         }
 
         @Override

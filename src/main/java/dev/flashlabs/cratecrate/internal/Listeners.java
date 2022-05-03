@@ -37,18 +37,17 @@ public final class Listeners {
                 for (Tuple<? extends Key, Integer> key : t.getFirst().keys()) {
                     if (!key.getFirst().take(player, key.getSecond())) {
                         if (taken.isEmpty()) {
-                            player.sendMessage(Text.of("One of the keys could not be taken. No keys were taken from you."));
+                            CrateCrate.get().sendMessage(player, "interact.keys.take.failure");
                         } else {
-                            CrateCrate.getContainer().getLogger().error("Incomplete transaction for player " + player.getName() + ": " + taken.stream()
+                            CrateCrate.get().getContainer().getLogger().error("Incomplete transaction for player " + player.getName() + ": " + taken.stream()
                                 .map(k -> k.getFirst().id() + " (x" + k.getSecond() + ")")
                                 .collect(Collectors.joining(", ")));
-                            player.sendMessage(Text.of(
-                                "One of the keys could not be taken. Please contact an admin to restore the following keys: ",
-                                Text.joinWith(Text.of(", "), taken.stream()
+                            CrateCrate.get().sendMessage(player, "interact.keys.take.incomplete",
+                                "keys", Text.joinWith(Text.of(", "), taken.stream()
                                     .map(k -> k.getFirst().name(Optional.of(k.getSecond())))
                                     .collect(Collectors.toList())
                                 )
-                            ));
+                            );
                         }
                         return;
                     }
@@ -56,13 +55,12 @@ public final class Listeners {
                 }
                 t.getFirst().open(player, t.getSecond());
             } else {
-                player.sendMessage(Text.of(
-                    "Missing the following keys: ",
-                    Text.joinWith(Text.of(", "), missing.stream()
+                CrateCrate.get().sendMessage(player, "interact.keys.missing",
+                    "keys", Text.joinWith(Text.of(", "), missing.stream()
                         .map(k -> k.getFirst().name(Optional.of(k.getSecond())))
                         .collect(Collectors.toList())
                     )
-                ));
+                );
             }
         });
     }
