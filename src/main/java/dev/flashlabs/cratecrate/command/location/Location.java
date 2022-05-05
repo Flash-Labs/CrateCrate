@@ -14,7 +14,7 @@ public final class Location extends Command {
         super(builder
             .aliases("location")
             .permission("cratecrate.command.location.base")
-            .children(Set.class, Delete.class)
+            .children(Delete.class, Set.class)
         );
     }
 

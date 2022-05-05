@@ -12,7 +12,7 @@ public final class Crate extends Command {
         super(builder
             .aliases("crate")
             .permission("cratecrate.command.crate.base")
-            .children(Give.class, Open.class)
+            .children(Give.class, List.class, Open.class)
         );
     }
 

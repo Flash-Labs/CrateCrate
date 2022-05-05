@@ -14,7 +14,7 @@ public final class Key extends Command {
         super(builder
             .aliases("key")
             .permission("cratecrate.command.key.base")
-            .children(Give.class, Take.class)
+            .children(Balance.class, Give.class, List.class, Take.class)
         );
     }
 
