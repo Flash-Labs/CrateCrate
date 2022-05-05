@@ -102,10 +102,10 @@ public final class Crate extends Component<Void> {
     }
 
     public boolean open(Player player, Location<World> location) {
-        return give(player, location, roll(player));
+        return give(player, roll(player), location);
     }
 
-    public boolean give(Player player, Location<World> location, Tuple<? extends Reward, BigDecimal> reward) {
+    public boolean give(Player player, Tuple<? extends Reward, BigDecimal> reward, Location<World> location) {
         return reward.getFirst().give(player);
     }
 

@@ -2,6 +2,7 @@ package dev.flashlabs.cratecrate.command.key;
 
 import com.google.inject.Inject;
 import dev.flashlabs.cratecrate.CrateCrate;
+import dev.flashlabs.cratecrate.command.CommandUtils;
 import dev.flashlabs.cratecrate.component.key.Key;
 import dev.flashlabs.cratecrate.internal.Config;
 import dev.flashlabs.flashlibs.command.Command;
@@ -16,6 +17,13 @@ import org.spongepowered.api.text.Text;
 import java.util.Optional;
 
 public final class Balance extends Command {
+
+    public static final Text USAGE = CommandUtils.usage(
+        "/crate key balance ",
+        "Checks the balance of a user's keys.",
+        CommandUtils.argument("user", false, "A username or selector matching a single user (online/offline), defaulting to the player executing this command."),
+        CommandUtils.argument("key", true, "A registered key id.")
+    );
 
     @Inject
     private Balance(Command.Builder builder) {

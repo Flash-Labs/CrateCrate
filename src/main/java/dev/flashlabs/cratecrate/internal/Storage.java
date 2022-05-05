@@ -109,6 +109,7 @@ public final class Storage {
             location.getBlockZ(),
             crate.id()
         );
+        LOCATIONS.put(location, Optional.of(crate));
     }
 
     public static void deleteLocation(Location<World> location) throws SQLException {
@@ -120,6 +121,7 @@ public final class Storage {
             location.getBlockY(),
             location.getBlockZ()
         );
+        LOCATIONS.remove(location);
     }
 
 }

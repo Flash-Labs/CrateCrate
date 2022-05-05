@@ -1,6 +1,6 @@
 package dev.flashlabs.cratecrate.command.crate;
 
-import dev.flashlabs.cratecrate.CrateCrate;
+import dev.flashlabs.cratecrate.command.CommandUtils;
 import dev.flashlabs.cratecrate.internal.Config;
 import dev.flashlabs.cratecrate.internal.Inventory;
 import dev.flashlabs.cratecrate.internal.Utils;
@@ -10,6 +10,7 @@ import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.args.CommandContext;
+import org.spongepowered.api.command.args.GenericArguments;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.item.ItemTypes;
 import org.spongepowered.api.text.Text;
@@ -19,15 +20,24 @@ import java.util.stream.Collectors;
 
 public final class List extends Command {
 
+    public static final Text USAGE = CommandUtils.usage(
+        "/crate crate list ",
+        "Gives a reward to a player as if given through this crate.",
+        CommandUtils.argument("--text", false, "List crates through text rather than GUI (always enabled for console).")
+    );
+
     private List(Builder builder) {
         super(builder
             .aliases("list", "/crates")
             .permission("cratecrate.command.crate.list.base")
+            .elements(
+                GenericArguments.flags().flag("-text").buildWith(GenericArguments.none())
+            )
         );
     }
 
     public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
-        if (src instanceof Player) {
+        if (src instanceof Player && !args.hasFlag("text")) {
             //TODO: Filter with permission
             Inventory.page(
                 Text.of("Available Crates"),
@@ -41,8 +51,10 @@ public final class List extends Command {
                 Inventory.CLOSE
             ).open((Player) src);
         } else {
-            //TODO: Text display (pagination)
-            throw new CommandException(CrateCrate.get().getMessage("command.crate.list.player-only", src.getLocale()));
+            CommandUtils.paginate(src, Config.CRATES.values().stream()
+                .map(c -> c.name(Optional.empty()))
+                .toArray(Text[]::new)
+            );
         }
         return CommandResult.success();
     }

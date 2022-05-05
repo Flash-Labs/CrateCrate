@@ -2,6 +2,7 @@ package dev.flashlabs.cratecrate.command.reward;
 
 import com.google.inject.Inject;
 import dev.flashlabs.cratecrate.CrateCrate;
+import dev.flashlabs.cratecrate.command.CommandUtils;
 import dev.flashlabs.cratecrate.component.Reward;
 import dev.flashlabs.cratecrate.internal.Config;
 import dev.flashlabs.flashlibs.command.Command;
@@ -15,14 +16,21 @@ import org.spongepowered.api.text.Text;
 
 public final class Give extends Command {
 
+    public static final Text USAGE = CommandUtils.usage(
+        "/crate prize give ",
+        "Gives a reward to a user.",
+        CommandUtils.argument("user", false, "A username or selector matching a single user (online/offline), defaulting to the player executing this command."),
+        CommandUtils.argument("reward", true, "A registered reward id.")
+    );
+
     @Inject
     private Give(Command.Builder builder) {
         super(builder
             .aliases("give")
             .permission("cratecrate.command.reward.give.base")
             .elements(
-                GenericArguments.userOrSource(Text.of("user")),
-                GenericArguments.choices(Text.of("reward"), Config.REWARDS::keySet, Config.REWARDS::get)
+                GenericArguments.onlyOne(GenericArguments.userOrSource(Text.of("user"))),
+                GenericArguments.choices(Text.of("reward"), Config.REWARDS::keySet, Config.REWARDS::get, false)
             )
         );
     }

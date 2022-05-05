@@ -2,6 +2,7 @@ package dev.flashlabs.cratecrate.command.location;
 
 import com.google.inject.Inject;
 import dev.flashlabs.cratecrate.CrateCrate;
+import dev.flashlabs.cratecrate.command.CommandUtils;
 import dev.flashlabs.cratecrate.internal.Storage;
 import dev.flashlabs.flashlibs.command.Command;
 import org.spongepowered.api.command.CommandException;
@@ -17,12 +18,20 @@ import java.sql.SQLException;
 
 public final class Delete extends Command {
 
+    public static final Text USAGE = CommandUtils.usage(
+        "/crate location delete ",
+        "Deletes a registered crate location.",
+        CommandUtils.argument("location", true, "A world (optional for players) and xyz position."),
+        CommandUtils.argument("crate", true, "A registered crate id.")
+    );
+
     @Inject
     private Delete(Command.Builder builder) {
         super(builder
             .aliases("delete")
             .permission("cratecrate.command.location.delete.base")
             .elements(
+                //TODO: Fix location parsing
                 GenericArguments.location(Text.of("location"))
             )
         );
@@ -31,9 +40,11 @@ public final class Delete extends Command {
     public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
         Location<World> location = args.requireOne("location");
         location = new Location<>(location.getExtent(), location.getBlockPosition());
+        if (!Storage.LOCATIONS.containsKey(location)) {
+            throw new CommandException(CrateCrate.get().getMessage("command.location.delete.invalid-location", src.getLocale()));
+        }
         try {
             Storage.deleteLocation(location);
-            Storage.LOCATIONS.remove(location);
             CrateCrate.get().sendMessage(src, "command.location.delete.success");
         } catch (SQLException e) {
             e.printStackTrace();

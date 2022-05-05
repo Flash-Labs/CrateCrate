@@ -1,7 +1,5 @@
 package dev.flashlabs.cratecrate.command;
 
-import com.google.common.collect.Lists;
-import dev.flashlabs.cratecrate.CrateCrate;
 import dev.flashlabs.cratecrate.command.crate.Crate;
 import dev.flashlabs.cratecrate.command.key.Key;
 import dev.flashlabs.cratecrate.command.location.Location;
@@ -12,13 +10,14 @@ import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.args.CommandContext;
 import org.spongepowered.api.text.Text;
-import org.spongepowered.api.text.action.TextActions;
-import org.spongepowered.api.text.format.TextStyles;
-
-import java.net.MalformedURLException;
-import java.net.URL;
 
 public final class Base extends Command {
+
+    public static final Text USAGE = CommandUtils.usage(
+        "/crate ",
+        "The base command for CrateCrate.",
+        CommandUtils.argument("...", false, "A subcommand (crate/key/location/prize/reward).")
+    );
 
     private Base(Builder builder) {
         super(builder
@@ -29,19 +28,7 @@ public final class Base extends Command {
     }
 
     public CommandResult execute(CommandSource src, CommandContext args) {
-        try {
-            Lists.newArrayList(
-                Text.of("CrateCrate v", CrateCrate.get().getContainer().getVersion()),
-                Text.of("GitHub: ", Text.builder("https://github.com/flash-labs/CrateCrate")
-                    .style(TextStyles.UNDERLINE)
-                    .onClick(TextActions.openUrl(new URL("https://github.com/flash-labs/CrateCrate")))
-                    .build()),
-                Text.of("Discord: ", Text.builder("https://discord.gg/zWqnAa9KRn")
-                    .style(TextStyles.UNDERLINE)
-                    .onClick(TextActions.openUrl(new URL("https://discord.gg/zWqnAa9KRn")))
-                )
-            ).forEach(src::sendMessage);
-        } catch (MalformedURLException ignored) {}
+        CommandUtils.paginate(src, USAGE, Crate.USAGE, Key.USAGE, Location.USAGE, Prize.USAGE, Reward.USAGE);
         return CommandResult.success();
     }
 
