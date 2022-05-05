@@ -42,10 +42,13 @@ public final class List extends Command {
             Inventory.page(
                 Text.of("Available Crates"),
                 Config.CRATES.values().stream()
+                    .filter(c -> src.hasPermission("cratecrate.crates." + c.id() + ".base"))
                     .map(c -> Element.of(c.icon(Optional.empty()), a -> a.callback(v -> {
-                        Utils.preview(c, Element.of(Inventory.item(ItemTypes.CHEST, Text.of("Available Crates")), a2 -> a2.callback(v2 -> {
-                            v.open((Player) src);
-                        }))).open(a.getPlayer());
+                        if (src.hasPermission("cratecrate.crates." + c.id() + ".preview")) {
+                            Utils.preview(c, Element.of(Inventory.item(ItemTypes.CHEST, Text.of("Available Crates")), a2 -> a2.callback(v2 -> {
+                                v.open((Player) src);
+                            }))).open(a.getPlayer());
+                        }
                     })))
                     .collect(Collectors.toList()),
                 Inventory.CLOSE
