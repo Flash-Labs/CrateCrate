@@ -39,9 +39,15 @@ public final class Give extends Command {
         User user = args.requireOne("user");
         Reward reward = args.requireOne("reward");
         if (reward.give(user)) {
-            CrateCrate.get().sendMessage(src, "command.prize.give.success");
+            CrateCrate.get().sendMessage(src, "command.prize.give.success",
+                "user", user.getName(),
+                "reward", reward.id()
+            );
         } else {
-            throw new CommandException(CrateCrate.get().getMessage("command.prize.give.failure", src.getLocale()));
+            throw new CommandException(CrateCrate.get().getMessage("command.prize.give.failure", src.getLocale(),
+                "user", user.getName(),
+                "reward", reward.id()
+            ));
         }
         return CommandResult.success();
     }

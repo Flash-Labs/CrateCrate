@@ -54,9 +54,19 @@ public final class Give extends Command {
         Reward reward = args.requireOne("reward");
         Vector3d position = args.requireOne("position");
         if (crate.give(player, Tuple.of(reward, BigDecimal.ZERO), player.getLocation().setPosition(position))) {
-            CrateCrate.get().sendMessage(src, "command.crate.give.success");
+            CrateCrate.get().sendMessage(src, "command.crate.give.success",
+                "player", player.getName(),
+                "crate", crate.id(),
+                "reward", reward.id(),
+                "position", position
+            );
         } else {
-            throw new CommandException(CrateCrate.get().getMessage("command.crate.give.failure", src.getLocale()));
+            throw new CommandException(CrateCrate.get().getMessage("command.crate.give.failure", src.getLocale(),
+                "player", player.getName(),
+                "crate", crate.id(),
+                "reward", reward.id(),
+                "position", position
+            ));
         }
         return CommandResult.success();
     }

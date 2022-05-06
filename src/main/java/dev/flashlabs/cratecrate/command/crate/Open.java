@@ -45,9 +45,17 @@ public final class Open extends Command {
         Crate crate = args.requireOne("crate");
         Vector3d position = args.requireOne("position");
         if (crate.open(player, player.getLocation().setPosition(position))) {
-            CrateCrate.get().sendMessage(src, "command.crate.open.success");
+            CrateCrate.get().sendMessage(src, "command.crate.open.success",
+                "player", player.getName(),
+                "crate", crate.id(),
+                "position", position
+            );
         } else {
-            throw new CommandException(CrateCrate.get().getMessage("command.crate.open.failure", src.getLocale()));
+            throw new CommandException(CrateCrate.get().getMessage("command.crate.open.failure", src.getLocale(),
+                "player", player.getName(),
+                "crate", crate.id(),
+                "position", position
+            ));
         }
         return CommandResult.success();
     }

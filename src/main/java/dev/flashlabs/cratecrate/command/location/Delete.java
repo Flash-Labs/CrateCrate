@@ -3,6 +3,8 @@ package dev.flashlabs.cratecrate.command.location;
 import com.google.inject.Inject;
 import dev.flashlabs.cratecrate.CrateCrate;
 import dev.flashlabs.cratecrate.command.CommandUtils;
+import dev.flashlabs.cratecrate.component.Component;
+import dev.flashlabs.cratecrate.component.Crate;
 import dev.flashlabs.cratecrate.internal.Storage;
 import dev.flashlabs.flashlibs.command.Command;
 import org.spongepowered.api.command.CommandException;
@@ -15,6 +17,7 @@ import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 
 import java.sql.SQLException;
+import java.util.Optional;
 
 public final class Delete extends Command {
 
@@ -41,14 +44,24 @@ public final class Delete extends Command {
         Location<World> location = args.requireOne("location");
         location = new Location<>(location.getExtent(), location.getBlockPosition());
         if (!Storage.LOCATIONS.containsKey(location)) {
-            throw new CommandException(CrateCrate.get().getMessage("command.location.delete.invalid-location", src.getLocale()));
+            throw new CommandException(CrateCrate.get().getMessage("command.location.delete.invalid-location", src.getLocale(),
+                "location", location.getExtent().getName() + " " + location.getPosition()
+            ));
         }
+        //TODO: Get registered crate id from database?
+        Optional<Crate> crate = Storage.LOCATIONS.get(location);
         try {
             Storage.deleteLocation(location);
-            CrateCrate.get().sendMessage(src, "command.location.delete.success");
+            CrateCrate.get().sendMessage(src, "command.location.delete.success",
+                "location", location.getExtent().getName() + " " + location.getPosition(),
+                "crate", crate.map(Component::id).orElse("unavailable")
+            );
         } catch (SQLException e) {
             e.printStackTrace();
-            throw new CommandException(CrateCrate.get().getMessage("command.location.delete.failure", src.getLocale()));
+            throw new CommandException(CrateCrate.get().getMessage("command.location.delete.failure", src.getLocale(),
+                "location", location.getExtent().getName() + " " + location.getPosition(),
+                "crate", crate.map(Component::id).orElse("unavailable")
+            ));
         }
         return CommandResult.success();
     }

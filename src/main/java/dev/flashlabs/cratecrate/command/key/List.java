@@ -41,7 +41,9 @@ public final class List extends Command {
     public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
         User user = args.requireOne("user");
         if (src != user && !src.hasPermission("cratecrate.command.key.balance.other")) {
-            throw new CommandException(CrateCrate.get().getMessage("command.key.balance.other.no-permission", src.getLocale()));
+            throw new CommandException(CrateCrate.get().getMessage("command.key.list.other.no-permission", src.getLocale(),
+                "user", user.getName()
+            ));
         }
         if (src instanceof Player && !args.hasFlag("text")) {
             Inventory.page(

@@ -41,14 +41,31 @@ public final class Take extends Command {
         User user = args.requireOne("user");
         Key key = args.requireOne("key");
         int quantity = args.requireOne("quantity");
-        //TODO: Quantity error message
-        if (quantity > 0 && quantity <= key.quantity(user).orElse(0)) {
-            throw new CommandException(CrateCrate.get().getMessage("command.key.take.invalid-quantity", src.getLocale()));
+        int balance = key.quantity(user).orElse(0);
+        if (quantity <= 0) {
+            throw new CommandException(CrateCrate.get().getMessage("command.key.take.invalid-quantity", src.getLocale(),
+                "quantity", quantity,
+                "bound", 0
+            ));
+        } else if (quantity > balance) {
+            throw new CommandException(CrateCrate.get().getMessage("command.key.take.excessive-quantity", src.getLocale(),
+                "quantity", quantity,
+                "balance", key.quantity(user).orElse(0)
+            ));
         }
         if (key.take(user, quantity)) {
-            CrateCrate.get().sendMessage(src, "command.key.take.success");
+            CrateCrate.get().sendMessage(src, "command.key.take.success",
+                "user", user.getName(),
+                "key", key.id(),
+                "quantity", quantity,
+                "balance", balance - quantity
+            );
         } else {
-            throw new CommandException(CrateCrate.get().getMessage("command.key.take.failure", src.getLocale()));
+            throw new CommandException(CrateCrate.get().getMessage("command.key.take.failure", src.getLocale(),
+                "user", user.getName(),
+                "key", key.id(),
+                "quantity", quantity
+            ));
         }
         return CommandResult.success();
     }

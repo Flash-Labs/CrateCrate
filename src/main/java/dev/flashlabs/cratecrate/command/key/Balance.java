@@ -41,9 +41,13 @@ public final class Balance extends Command {
         User user = args.requireOne("user");
         Key key = args.requireOne("key");
         if (src != user && !src.hasPermission("cratecrate.command.key.balance.other")) {
-            throw new CommandException(CrateCrate.get().getMessage("command.key.balance.other.no-permission", src.getLocale()));
+            throw new CommandException(CrateCrate.get().getMessage("command.key.balance.other.no-permission", src.getLocale(),
+                "user", user.getName()
+            ));
         }
-        src.sendMessage(key.name(Optional.of(key.quantity(user).orElse(0))));
+        CrateCrate.get().sendMessage(src, "command.key.balance.success",
+            "key", key.name(Optional.of(key.quantity(user).orElse(0)))
+        );
         return CommandResult.success();
     }
 

@@ -86,12 +86,15 @@ public final class Utils {
         for (Tuple<? extends Key, Integer> key : crate.keys()) {
             if (!key.getFirst().take(player, key.getSecond())) {
                 if (taken.isEmpty()) {
-                    CrateCrate.get().sendMessage(player, "interact.keys.take.failure");
+                    CrateCrate.get().sendMessage(player, "interact.keys.take.failure",
+                        "key", key.getFirst().name(Optional.of(key.getSecond()))
+                    );
                 } else {
                     CrateCrate.get().getContainer().getLogger().error("Incomplete transaction for player " + player.getName() + ": " + taken.stream()
                         .map(k -> k.getFirst().id() + " (x" + k.getSecond() + ")")
                         .collect(Collectors.joining(", ")));
                     CrateCrate.get().sendMessage(player, "interact.keys.take.incomplete",
+                        "key", key.getFirst().name(Optional.of(key.getSecond())),
                         "keys", Text.joinWith(Text.of(", "), taken.stream()
                             .map(k -> k.getFirst().name(Optional.of(k.getSecond())))
                             .collect(Collectors.toList())

@@ -43,12 +43,24 @@ public final class Give extends Command {
         int quantity = args.requireOne("quantity");
         //TODO: Quantity error message
         if (quantity <= 0) {
-            throw new CommandException(CrateCrate.get().getMessage("command.key.give.invalid-quantity", src.getLocale()));
+            throw new CommandException(CrateCrate.get().getMessage("command.key.give.invalid-quantity", src.getLocale(),
+                "quantity", quantity,
+                "bound", 0
+            ));
         }
         if (key.give(user, quantity)) {
-            CrateCrate.get().sendMessage(src, "command.key.give.success");
+            CrateCrate.get().sendMessage(src, "command.key.give.success",
+                "user", user.getName(),
+                "key", key.id(),
+                "quantity", quantity,
+                "balance", key.quantity(user).orElse(0)
+            );
         } else {
-            throw new CommandException(CrateCrate.get().getMessage("command.key.give.failure", src.getLocale()));
+            throw new CommandException(CrateCrate.get().getMessage("command.key.give.failure", src.getLocale(),
+                "user", user.getName(),
+                "key", key.id(),
+                "quantity", quantity
+            ));
         }
         return CommandResult.success();
     }

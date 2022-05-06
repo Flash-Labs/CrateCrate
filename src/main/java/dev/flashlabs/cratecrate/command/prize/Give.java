@@ -60,7 +60,10 @@ public final class Give extends Command {
                 }
                 result = prize.give(user, quantity);
             } catch (NumberFormatException e) {
-                throw new CommandException(CrateCrate.get().getMessage("command.prize.give.invalid-quantity", src.getLocale()));
+                throw new CommandException(CrateCrate.get().getMessage("command.prize.give.invalid-quantity", src.getLocale(),
+                    "quantity", value.map(v -> v.contains(" ") ? "\"" + v + "\"" : v).orElse("\"\""),
+                    "bound", 0
+                ));
             }
         } else if (prize instanceof MoneyPrize) {
             try {
@@ -70,15 +73,26 @@ public final class Give extends Command {
                 }
                 result = prize.give(user, amount);
             } catch (NumberFormatException e) {
-                throw new CommandException(CrateCrate.get().getMessage("command.prize.give.invalid-amount", src.getLocale()));
+                throw new CommandException(CrateCrate.get().getMessage("command.prize.give.invalid-amount", src.getLocale(),
+                    "amount", value.map(v -> v.contains(" ") ? "\"" + v + "\"" : v).orElse("\"\""),
+                    "bound", 0
+                ));
             }
         } else {
             throw new AssertionError(prize.getClass().getName());
         }
         if (result) {
-            CrateCrate.get().sendMessage(src, "command.prize.give.success");
+            CrateCrate.get().sendMessage(src, "command.prize.give.success",
+                "user", user.getName(),
+                "prize", prize.id(),
+                "value", value.map(v -> v.contains(" ") ? "\"" + v + "\"" : v).orElse("\"\"")
+            );
         } else {
-            throw new CommandException(CrateCrate.get().getMessage("command.prize.give.failure", src.getLocale()));
+            throw new CommandException(CrateCrate.get().getMessage("command.prize.give.failure", src.getLocale(),
+                "user", user.getName(),
+                "prize", prize.id(),
+                "value", value.map(v -> v.contains(" ") ? "\"" + v + "\"" : v).orElse("\"\"")
+            ));
         }
         return CommandResult.success();
     }

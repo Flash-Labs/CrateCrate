@@ -3,6 +3,7 @@ package dev.flashlabs.cratecrate.command.location;
 import com.google.inject.Inject;
 import dev.flashlabs.cratecrate.CrateCrate;
 import dev.flashlabs.cratecrate.command.CommandUtils;
+import dev.flashlabs.cratecrate.component.Component;
 import dev.flashlabs.cratecrate.component.Crate;
 import dev.flashlabs.cratecrate.internal.Config;
 import dev.flashlabs.cratecrate.internal.Storage;
@@ -17,6 +18,7 @@ import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 
 import java.sql.SQLException;
+import java.util.Optional;
 
 public final class Set extends Command {
 
@@ -45,14 +47,24 @@ public final class Set extends Command {
         Crate crate = args.requireOne("crate");
         location = new Location<>(location.getExtent(), location.getBlockPosition());
         if (Storage.LOCATIONS.containsKey(location)) {
-            throw new CommandException(CrateCrate.get().getMessage("command.location.set.invalid-location", src.getLocale()));
+            Optional<Crate> registered = Storage.LOCATIONS.get(location);
+            throw new CommandException(CrateCrate.get().getMessage("command.location.set.invalid-location", src.getLocale(),
+                "location", location.getExtent().getName() + " " + location.getPosition(),
+                "crate", registered.map(Component::id).orElse("unavailable")
+            ));
         }
         try {
             Storage.setLocation(location, crate);
-            CrateCrate.get().sendMessage(src, "command.location.set.success");
+            CrateCrate.get().sendMessage(src, "command.location.set.success",
+                "location", location.getExtent().getName() + " " + location.getPosition(),
+                "crate", crate.id()
+            );
         } catch (SQLException e) {
             e.printStackTrace();
-            throw new CommandException(CrateCrate.get().getMessage("command.location.set.failure", src.getLocale()));
+            throw new CommandException(CrateCrate.get().getMessage("command.location.set.failure", src.getLocale(),
+                "location", location.getExtent().getName() + " " + location.getPosition(),
+                "crate", crate.id()
+            ));
         }
         return CommandResult.success();
     }

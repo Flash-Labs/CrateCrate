@@ -20,7 +20,9 @@ public final class Listeners {
     public void onInteractBlockPrimary(InteractBlockEvent.Primary event, @Root Player player) {
         event.getTargetBlock().getLocation().flatMap(l -> preInteract(event, player, l)).ifPresent(t -> {
             if (!player.hasPermission("cratecrate.crates." + t.getFirst().id() + ".preview")) {
-                CrateCrate.get().sendMessage(player, "interact.crates.preview.no-permission");
+                CrateCrate.get().sendMessage(player, "interact.crates.preview.no-permission",
+                    "crate", t.getFirst().name(Optional.empty())
+                );
             } else {
                 Utils.preview(t.getFirst(), Inventory.CLOSE).open(player);
             }
@@ -42,7 +44,9 @@ public final class Listeners {
             if (!o.isPresent()) {
                 CrateCrate.get().sendMessage(player, "interact.crates.unavailable");
             } else if (!player.hasPermission("cratecrate.crates." + o.get().id() + ".base")) {
-                CrateCrate.get().sendMessage(player, "interact.crates.no-permission");
+                CrateCrate.get().sendMessage(player, "interact.crates.no-permission",
+                    "crate", o.get().name(Optional.empty())
+                );
             } else {
                 return o
                     .filter(c -> event.getHandType() == HandTypes.MAIN_HAND)
