@@ -64,15 +64,16 @@ public final class Storage {
                         Crate crate = Config.CRATES.get(result.getString(5));
                         LOCATIONS.put(location, Optional.ofNullable(crate));
                         if (crate == null) {
-                            CrateCrate.get().getContainer().getLogger().error("Location is set to unknown crate: " + result.getString(5) + ".");
+                            CrateCrate.get().getLogger().error("Location is set to unknown crate: " + result.getString(5) + ".");
                         }
                     } else {
-                        CrateCrate.get().getContainer().getLogger().error("Location is set to unknown world: " + result.getString(1) + ".");
+                        CrateCrate.get().getLogger().error("Location is set to unknown world: " + result.getString(1) + ".");
                     }
                 }
             }
         } catch (IOException | SQLException e) {
-            CrateCrate.get().getContainer().getLogger().error("Error loading storage: ", e);
+            CrateCrate.get().getLogger().error("Error loading storage: " + e.getMessage());
+            CrateCrate.get().getLogger().error("Storage loading halted early, certain features may or may not be operational.");
         }
     }
 

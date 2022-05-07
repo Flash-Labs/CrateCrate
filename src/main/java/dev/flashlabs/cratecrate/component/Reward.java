@@ -1,12 +1,14 @@
 package dev.flashlabs.cratecrate.component;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Range;
 import dev.flashlabs.cratecrate.CrateCrate;
 import dev.flashlabs.cratecrate.component.prize.Prize;
 import dev.flashlabs.cratecrate.internal.Config;
-import dev.flashlabs.cratecrate.internal.SerializationException;
 import dev.flashlabs.cratecrate.internal.Serializers;
-import ninja.leaping.configurate.ConfigurationNode;
+import dev.willbanders.storm.Storm;
+import dev.willbanders.storm.config.Node;
+import dev.willbanders.storm.serializer.SerializationException;
 import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.item.ItemTypes;
@@ -124,7 +126,7 @@ public final class Reward extends Component<BigDecimal> {
         }
 
         @Override
-        public boolean matches(ConfigurationNode node) {
+        public boolean matches(Node node) {
             return true;
         }
 
@@ -140,21 +142,14 @@ public final class Reward extends Component<BigDecimal> {
          * }</pre>
          */
         @Override
-        public Reward deserializeComponent(ConfigurationNode node) throws SerializationException {
-            Optional<String> name = Optional.ofNullable(node.getNode("name").getString());
-            Optional<ImmutableList<String>> lore = node.getNode("lore").isList()
-                ? Optional.of(node.getChildrenList().stream()
-                    .map(s -> s.getString(""))
-                    .collect(ImmutableList.toImmutableList())
-                )
-                : Optional.empty();
-            Optional<ItemStackSnapshot> icon = !node.getNode("icon").isVirtual()
-                ? Optional.of(Serializers.ITEM_STACK.deserialize(node.getNode("icon")).createSnapshot())
-                : Optional.empty();
-            ImmutableList<Tuple<? extends Prize, ?>> prizes = node.getNode("prizes").getChildrenList().stream()
+        public Reward deserializeComponent(Node node) throws SerializationException {
+            Optional<String> name = node.get("name", Storm.STRING.optional());
+            Optional<ImmutableList<String>> lore = node.get("lore", Storm.LIST.of(Storm.STRING).optional()).map(ImmutableList::copyOf);
+            Optional<ItemStackSnapshot> icon = node.get("icon", Serializers.ITEM_STACK.optional()).map(ItemStack::createSnapshot);
+            ImmutableList<Tuple<? extends Prize, ?>> prizes = node.get("prizes", Storm.LIST.of(n -> n).optional(ImmutableList.of())).stream()
                 .map(n -> {
-                    ConfigurationNode component = n.isList() ? n.getNode(0) : n;
-                    List<? extends ConfigurationNode> values = n.getChildrenList().subList(n.isList() ? 1 : 0, n.getChildrenList().size());
+                    Node component = n.getType() == Node.Type.ARRAY ? n.resolve(0) : n;
+                    List<Node> values = n.getType() == Node.Type.ARRAY ? n.getList().subList(1, n.getList().size()) : ImmutableList.of();
                     return Config.resolvePrizeType(component).deserializeReference(component, values);
                 })
                 .collect(ImmutableList.toImmutableList());
@@ -162,7 +157,7 @@ public final class Reward extends Component<BigDecimal> {
         }
 
         @Override
-        public void reserializeComponent(ConfigurationNode node, Reward component) throws SerializationException {
+        public void reserializeComponent(Node node, Reward component) throws SerializationException {
             throw new UnsupportedOperationException(); //TODO
         }
 
@@ -182,19 +177,19 @@ public final class Reward extends Component<BigDecimal> {
          * }</pre>
          */
         @Override
-        public Tuple<Reward, BigDecimal> deserializeReference(ConfigurationNode node, List<? extends ConfigurationNode> values) throws SerializationException {
+        public Tuple<Reward, BigDecimal> deserializeReference(Node node, List<? extends Node> values) throws SerializationException {
             Reward reward;
-            if (node.isMap()) {
-                if (!node.getNode("prizes").isVirtual()) {
+            if (node.getType() == Node.Type.OBJECT) {
+                if (node.get("prizes").getType() != Node.Type.UNDEFINED) {
                     reward = deserializeComponent(node);
-                    reward = new Reward("Reward@" + Arrays.toString(node.getPath()), reward.name, reward.lore, reward.icon, reward.prizes);
+                    reward = new Reward("Reward@" + node.getPath(), reward.name, reward.lore, reward.icon, reward.prizes);
                 } else {
                     Tuple<? extends Prize, ?> prize = Config.resolvePrizeType(node).deserializeReference(node, values.subList(0, values.isEmpty() ? 0 : values.size() - 1));
-                    reward = new Reward("Reward@" + Arrays.toString(node.getPath()), Optional.empty(), Optional.empty(), Optional.empty(), ImmutableList.of(prize));
+                    reward = new Reward("Reward@" + node.getPath(), Optional.empty(), Optional.empty(), Optional.empty(), ImmutableList.of(prize));
                 }
                 Config.REWARDS.put(reward.id, reward);
             } else {
-                String identifier = Optional.ofNullable(node.getString()).orElse("");
+                String identifier = node.get(Storm.STRING);
                 if (Config.REWARDS.containsKey(identifier)) {
                     reward = Config.REWARDS.get(identifier);
                 } else {
@@ -203,13 +198,16 @@ public final class Reward extends Component<BigDecimal> {
                     Config.REWARDS.put(reward.id, reward);
                 }
             }
-            //TODO: Validate reference value counts and existence
-            BigDecimal value = new BigDecimal((!values.isEmpty() ? values.get(0) : node.getNode("weight")).getString());
-            return Tuple.of(reward, value);
+            if (values.isEmpty() && node.get("weight").getType() == Node.Type.UNDEFINED) {
+                throw new SerializationException(node, "Expected a value for the weight.");
+            }
+            BigDecimal weight = (!values.isEmpty() ? values.get(values.size() - 1) : node.get("weight"))
+                .get(Storm.BIG_DECIMAL.range(Range.greaterThan(BigDecimal.ZERO)));
+            return Tuple.of(reward, weight);
         }
 
         @Override
-        public void reserializeReference(ConfigurationNode node, Tuple<Reward, BigDecimal> reference) throws SerializationException {
+        public void reserializeReference(Node node, Tuple<Reward, BigDecimal> reference) throws SerializationException {
             throw new UnsupportedOperationException(); //TODO
         }
 

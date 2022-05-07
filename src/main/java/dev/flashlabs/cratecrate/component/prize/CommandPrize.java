@@ -4,9 +4,10 @@ import com.google.common.collect.ImmutableList;
 import dev.flashlabs.cratecrate.CrateCrate;
 import dev.flashlabs.cratecrate.component.Type;
 import dev.flashlabs.cratecrate.internal.Config;
-import dev.flashlabs.cratecrate.internal.SerializationException;
 import dev.flashlabs.cratecrate.internal.Serializers;
-import ninja.leaping.configurate.ConfigurationNode;
+import dev.willbanders.storm.Storm;
+import dev.willbanders.storm.config.Node;
+import dev.willbanders.storm.serializer.SerializationException;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.data.key.Keys;
@@ -19,7 +20,6 @@ import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.serializer.TextSerializers;
 import org.spongepowered.api.util.Tuple;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -127,10 +127,9 @@ public final class CommandPrize extends Prize<String> {
          * prefixed with {@code '/'}.
          */
         @Override
-        public boolean matches(ConfigurationNode node) {
-            return !node.getNode("command").isVirtual() || Optional.ofNullable(node.getString())
-                .map(s -> s.startsWith("/"))
-                .orElse(false);
+        public boolean matches(Node node) {
+            return node.get("command").getType() != Node.Type.UNDEFINED ||
+                node.getType() == Node.Type.STRING && node.get(Storm.STRING).startsWith("/");
         }
 
         /**
@@ -148,29 +147,18 @@ public final class CommandPrize extends Prize<String> {
          * }</pre>
          */
         @Override
-        public CommandPrize deserializeComponent(ConfigurationNode node) throws SerializationException {
-            Optional<String> name = Optional.ofNullable(node.getNode("name").getString());
-            Optional<ImmutableList<String>> lore = node.getNode("lore").isList()
-                ? Optional.of(node.getChildrenList().stream()
-                    .map(s -> s.getString(""))
-                    .collect(ImmutableList.toImmutableList())
-                )
-                : Optional.empty();
-            Optional<ItemStackSnapshot> icon = !node.getNode("icon").isVirtual()
-                ? Optional.of(Serializers.ITEM_STACK.deserialize(node.getNode("icon")).createSnapshot())
-                : Optional.empty();
-            String command = Optional.ofNullable(node.getNode("command", "command").getString())
-                .orElseGet(() -> node.getNode("command").getString("/"))
-                .substring(1);
-            Optional<Source> source = Optional.ofNullable(node.getNode("command", "source").getString())
-                .map(s -> Source.valueOf(s.toUpperCase()));
-            Optional<Boolean> online = Optional.ofNullable(node.getNode("command", "online").getString())
-                .map(Boolean::parseBoolean);
+        public CommandPrize deserializeComponent(Node node) throws SerializationException {
+            Optional<String> name = node.get("name", Storm.STRING.optional());
+            Optional<ImmutableList<String>> lore = node.get("lore", Storm.LIST.of(Storm.STRING).optional()).map(ImmutableList::copyOf);
+            Optional<ItemStackSnapshot> icon = node.get("icon", Serializers.ITEM_STACK.optional()).map(ItemStack::createSnapshot);
+            String command = node.get(node.get("command").getType() == Node.Type.STRING ? "command" : "command.command", Storm.STRING.matches("/.+")).substring(1);
+            Optional<Source> source = node.get("command.source", Storm.ENUM.of(Source.class).optional());
+            Optional<Boolean> online = node.get("command.online", Storm.BOOLEAN.optional());
             return new CommandPrize(String.valueOf(node.getKey()), name, lore, icon, command, source, online);
         }
 
         @Override
-        public void reserializeComponent(ConfigurationNode node, CommandPrize component) throws SerializationException {
+        public void reserializeComponent(Node node, CommandPrize component) throws SerializationException {
             throw new UnsupportedOperationException(); //TODO
         }
 
@@ -188,14 +176,14 @@ public final class CommandPrize extends Prize<String> {
          * }</pre>
          */
         @Override
-        public Tuple<CommandPrize, String> deserializeReference(ConfigurationNode node, List<? extends ConfigurationNode> values) throws SerializationException {
+        public Tuple<CommandPrize, String> deserializeReference(Node node, List<? extends Node> values) throws SerializationException {
             CommandPrize prize;
-            if (node.isMap()) {
+            if (node.getType() == Node.Type.OBJECT) {
                 prize = deserializeComponent(node);
-                prize = new CommandPrize("CommandPrize@" + Arrays.toString(node.getPath()), prize.name, prize.lore, prize.icon, prize.command, prize.source, prize.online);
+                prize = new CommandPrize("CommandPrize@" + node.getPath(), prize.name, prize.lore, prize.icon, prize.command, prize.source, prize.online);
                 Config.PRIZES.put(prize.id, prize);
             } else {
-                String identifier = Optional.ofNullable(node.getString()).orElse("");
+                String identifier = node.get(Storm.STRING);
                 if (Config.PRIZES.containsKey(identifier)) {
                     prize = (CommandPrize) Config.PRIZES.get(identifier);
                 } else if (identifier.startsWith("/")) {
@@ -205,13 +193,16 @@ public final class CommandPrize extends Prize<String> {
                     throw new AssertionError(identifier);
                 }
             }
-            //TODO: Validate reference value counts
-            String value = Optional.ofNullable((!values.isEmpty() ? values.get(0) : node.getNode("value")).getString()).orElse("");
+            if (prize.command.contains("${value}") && values.isEmpty() && node.get("value").getType() == Node.Type.UNDEFINED) {
+                throw new SerializationException(node, "Expected a reference value for the ${value} placeholder.");
+            }
+            String value = (!values.isEmpty() ? values.get(values.size() - 1) : node.get("value"))
+                .get(Storm.STRING.optional(""));
             return Tuple.of(prize, value);
         }
 
         @Override
-        public void reserializeReference(ConfigurationNode node, Tuple<CommandPrize, String> reference) throws SerializationException {
+        public void reserializeReference(Node node, Tuple<CommandPrize, String> reference) throws SerializationException {
             throw new UnsupportedOperationException(); //TODO
         }
 

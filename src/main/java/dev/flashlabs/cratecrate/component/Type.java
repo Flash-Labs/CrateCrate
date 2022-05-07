@@ -1,7 +1,7 @@
 package dev.flashlabs.cratecrate.component;
 
-import dev.flashlabs.cratecrate.internal.SerializationException;
-import ninja.leaping.configurate.ConfigurationNode;
+import dev.willbanders.storm.config.Node;
+import dev.willbanders.storm.serializer.SerializationException;
 import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.api.util.Tuple;
 
@@ -25,14 +25,14 @@ public abstract class Type<T extends Component<V>, V> {
         return container;
     }
 
-    public abstract boolean matches(ConfigurationNode node);
+    public abstract boolean matches(Node node);
 
-    public abstract T deserializeComponent(ConfigurationNode node) throws SerializationException;
+    public abstract T deserializeComponent(Node node) throws SerializationException;
 
-    public abstract void reserializeComponent(ConfigurationNode node, T component) throws SerializationException;
+    public abstract void reserializeComponent(Node node, T component) throws SerializationException;
 
-    public abstract Tuple<T, V> deserializeReference(ConfigurationNode node, List<? extends ConfigurationNode> values) throws SerializationException;
+    public abstract Tuple<T, V> deserializeReference(Node node, List<? extends Node> values) throws SerializationException;
 
-    public abstract void reserializeReference(ConfigurationNode node, Tuple<T, V> reference) throws SerializationException;
+    public abstract void reserializeReference(Node node, Tuple<T, V> reference) throws SerializationException;
 
 }

@@ -5,9 +5,10 @@ import com.google.common.collect.Maps;
 import dev.flashlabs.cratecrate.CrateCrate;
 import dev.flashlabs.cratecrate.component.key.Key;
 import dev.flashlabs.cratecrate.internal.Config;
-import dev.flashlabs.cratecrate.internal.SerializationException;
 import dev.flashlabs.cratecrate.internal.Serializers;
-import ninja.leaping.configurate.ConfigurationNode;
+import dev.willbanders.storm.Storm;
+import dev.willbanders.storm.config.Node;
+import dev.willbanders.storm.serializer.SerializationException;
 import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.item.ItemTypes;
@@ -37,7 +38,7 @@ public final class Crate extends Component<Void> {
     private final Optional<ImmutableList<String>> lore;
     private final Optional<ItemStackSnapshot> icon;
     private final ImmutableList<Tuple<? extends Key, Integer>> keys;
-    private final ImmutableList<Tuple<? extends Reward, BigDecimal>> rewards;
+    private final ImmutableList<Tuple<Reward, BigDecimal>> rewards;
 
     private Crate(
         String id,
@@ -45,7 +46,7 @@ public final class Crate extends Component<Void> {
         Optional<ImmutableList<String>> lore,
         Optional<ItemStackSnapshot> icon,
         ImmutableList<Tuple<? extends Key, Integer>> keys,
-        ImmutableList<Tuple<? extends Reward, BigDecimal>> rewards
+        ImmutableList<Tuple<Reward, BigDecimal>> rewards
     ) {
         super(id);
         this.name = name;
@@ -97,7 +98,7 @@ public final class Crate extends Component<Void> {
         return keys;
     }
 
-    public ImmutableList<Tuple<? extends Reward, BigDecimal>> rewards() {
+    public ImmutableList<Tuple<Reward, BigDecimal>> rewards() {
         return rewards;
     }
 
@@ -133,7 +134,7 @@ public final class Crate extends Component<Void> {
         }
 
         @Override
-        public boolean matches(ConfigurationNode node) {
+        public boolean matches(Node node) {
             return true;
         }
 
@@ -150,28 +151,21 @@ public final class Crate extends Component<Void> {
          * }</pre>
          */
         @Override
-        public Crate deserializeComponent(ConfigurationNode node) throws SerializationException {
-            Optional<String> name = Optional.ofNullable(node.getNode("name").getString());
-            Optional<ImmutableList<String>> lore = node.getNode("lore").isList()
-                ? Optional.of(node.getChildrenList().stream()
-                    .map(s -> s.getString(""))
-                    .collect(ImmutableList.toImmutableList())
-                )
-                : Optional.empty();
-            Optional<ItemStackSnapshot> icon = !node.getNode("icon").isVirtual()
-                ? Optional.of(Serializers.ITEM_STACK.deserialize(node.getNode("icon")).createSnapshot())
-                : Optional.empty();
-            ImmutableList<Tuple<? extends Key, Integer>> keys = node.getNode("keys").getChildrenList().stream()
+        public Crate deserializeComponent(Node node) throws SerializationException {
+            Optional<String> name = node.get("name", Storm.STRING.optional());
+            Optional<ImmutableList<String>> lore = node.get("lore", Storm.LIST.of(Storm.STRING).optional()).map(ImmutableList::copyOf);
+            Optional<ItemStackSnapshot> icon = node.get("icon", Serializers.ITEM_STACK.optional()).map(ItemStack::createSnapshot);
+            ImmutableList<Tuple<? extends Key, Integer>> keys = node.get("keys", Storm.LIST.of(n -> n).optional(ImmutableList.of())).stream()
                 .map(n -> {
-                    ConfigurationNode component = n.isList() ? n.getNode(0) : n;
-                    List<? extends ConfigurationNode> values = n.getChildrenList().subList(n.isList() ? 1 : 0, n.getChildrenList().size());
+                    Node component = n.getType() == Node.Type.ARRAY ? n.resolve(0) : n;
+                    List<Node> values = n.getType() == Node.Type.ARRAY ? n.getList().subList(1, n.getList().size()) : ImmutableList.of();
                     return Config.resolveKeyType(component).deserializeReference(component, values);
                 })
                 .collect(ImmutableList.toImmutableList());
-            ImmutableList<Tuple<? extends Reward, BigDecimal>> rewards = node.getNode("rewards").getChildrenList().stream()
+            ImmutableList<Tuple<Reward, BigDecimal>> rewards = node.get("rewards", Storm.LIST.of(n -> n).optional(ImmutableList.of())).stream()
                 .map(n -> {
-                    ConfigurationNode component = n.isList() ? n.getNode(0) : n;
-                    List<? extends ConfigurationNode> values = n.getChildrenList().subList(n.isList() ? 1 : 0, n.getChildrenList().size());
+                    Node component = n.getType() == Node.Type.ARRAY ? n.resolve(0) : n;
+                    List<Node> values = n.getType() == Node.Type.ARRAY ? n.getList().subList(1, n.getList().size()) : ImmutableList.of();
                     return Config.resolveRewardType(component).deserializeReference(component, values);
                 })
                 .collect(ImmutableList.toImmutableList());
@@ -179,17 +173,17 @@ public final class Crate extends Component<Void> {
         }
 
         @Override
-        public void reserializeComponent(ConfigurationNode node, Crate component) throws SerializationException {
+        public void reserializeComponent(Node node, Crate component) throws SerializationException {
             throw new UnsupportedOperationException(); //TODO
         }
 
         @Override
-        public Tuple<Crate, Void> deserializeReference(ConfigurationNode node, List<? extends ConfigurationNode> values) {
+        public Tuple<Crate, Void> deserializeReference(Node node, List<? extends Node> values) {
             throw new AssertionError("Crates cannot be referenced.");
         }
 
         @Override
-        public void reserializeReference(ConfigurationNode node, Tuple<Crate, Void> reference) {
+        public void reserializeReference(Node node, Tuple<Crate, Void> reference) {
             throw new AssertionError("Crates cannot be referenced.");
         }
 

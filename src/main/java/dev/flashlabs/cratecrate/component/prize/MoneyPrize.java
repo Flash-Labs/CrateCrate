@@ -1,12 +1,14 @@
 package dev.flashlabs.cratecrate.component.prize;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Range;
 import dev.flashlabs.cratecrate.CrateCrate;
 import dev.flashlabs.cratecrate.component.Type;
 import dev.flashlabs.cratecrate.internal.Config;
-import dev.flashlabs.cratecrate.internal.SerializationException;
 import dev.flashlabs.cratecrate.internal.Serializers;
-import ninja.leaping.configurate.ConfigurationNode;
+import dev.willbanders.storm.Storm;
+import dev.willbanders.storm.config.Node;
+import dev.willbanders.storm.serializer.SerializationException;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.data.type.DoublePlantTypes;
@@ -129,10 +131,9 @@ public final class MoneyPrize extends Prize<BigDecimal> {
          * prefixed with {@code '$'}.
          */
         @Override
-        public boolean matches(ConfigurationNode node) {
-            return !node.getNode("money").isVirtual() || Optional.ofNullable(node.getString())
-                .map(s -> s.startsWith("$"))
-                .orElse(false);
+        public boolean matches(Node node) {
+            return node.get("money").getType() != Node.Type.UNDEFINED
+                || node.getType() == Node.Type.STRING && node.get(Storm.STRING).startsWith("$");
         }
 
         /**
@@ -148,25 +149,16 @@ public final class MoneyPrize extends Prize<BigDecimal> {
          * }</pre>
          */
         @Override
-        public MoneyPrize deserializeComponent(ConfigurationNode node) throws SerializationException {
-            Optional<String> name = Optional.ofNullable(node.getNode("name").getString());
-            Optional<ImmutableList<String>> lore = node.getNode("lore").isList()
-                ? Optional.of(node.getChildrenList().stream()
-                    .map(s -> s.getString(""))
-                    .collect(ImmutableList.toImmutableList())
-                )
-                : Optional.empty();
-            Optional<ItemStackSnapshot> icon = !node.getNode("icon").isVirtual()
-                ? Optional.of(Serializers.ITEM_STACK.deserialize(node.getNode("icon")).createSnapshot())
-                : Optional.empty();
-            Optional<Currency> currency = !node.getNode("money", "currency").isVirtual()
-                ? Optional.of(Serializers.CURRENCY.deserialize(node.getNode("money", "currency")))
-                : Optional.empty();
+        public MoneyPrize deserializeComponent(Node node) throws SerializationException {
+            Optional<String> name = node.get("name", Storm.STRING.optional());
+            Optional<ImmutableList<String>> lore = node.get("lore", Storm.LIST.of(Storm.STRING).optional()).map(ImmutableList::copyOf);
+            Optional<ItemStackSnapshot> icon = node.get("icon", Serializers.ITEM_STACK.optional()).map(ItemStack::createSnapshot);
+            Optional<Currency> currency = node.get("money.currency", Serializers.CURRENCY.optional());
             return new MoneyPrize(String.valueOf(node.getKey()), name, lore, icon, currency);
         }
 
         @Override
-        public void reserializeComponent(ConfigurationNode node, MoneyPrize component) throws SerializationException {
+        public void reserializeComponent(Node node, MoneyPrize component) throws SerializationException {
             throw new UnsupportedOperationException(); //TODO
         }
 
@@ -184,14 +176,14 @@ public final class MoneyPrize extends Prize<BigDecimal> {
          * }</pre>
          */
         @Override
-        public Tuple<MoneyPrize, BigDecimal> deserializeReference(ConfigurationNode node, List<? extends ConfigurationNode> values) throws SerializationException {
+        public Tuple<MoneyPrize, BigDecimal> deserializeReference(Node node, List<? extends Node> values) throws SerializationException {
             MoneyPrize prize;
-            if (node.isMap()) {
+            if (node.getType() == Node.Type.OBJECT) {
                 prize = deserializeComponent(node);
-                prize = new MoneyPrize("MoneyPrize@" + Arrays.toString(node.getPath()), prize.name, prize.lore, prize.icon, prize.currency);
+                prize = new MoneyPrize("MoneyPrize@" + node.getPath(), prize.name, prize.lore, prize.icon, prize.currency);
                 Config.PRIZES.put(prize.id, prize);
             } else {
-                String identifier = Optional.ofNullable(node.getString()).orElse("");
+                String identifier = node.get(Storm.STRING);
                 if (Config.PRIZES.containsKey(identifier)) {
                     prize = (MoneyPrize) Config.PRIZES.get(identifier);
                 } else if (identifier.matches("\\$[0-9]+(\\.[0-9]+)?")) {
@@ -205,13 +197,16 @@ public final class MoneyPrize extends Prize<BigDecimal> {
                     throw new AssertionError(identifier);
                 }
             }
-            //TODO: Validate reference value counts
-            BigDecimal amount = new BigDecimal((!values.isEmpty() ? values.get(0) : node.getNode("amount")).getString("0"));
+            if (values.isEmpty() && node.get("amount").getType() == Node.Type.UNDEFINED) {
+                throw new SerializationException(node, "Expected a reference value for the amount.");
+            }
+            BigDecimal amount = (!values.isEmpty() ? values.get(values.size() - 1) : node.get("amount"))
+                .get(Storm.BIG_DECIMAL.range(Range.greaterThan(BigDecimal.ZERO)));
             return Tuple.of(prize, amount);
         }
 
         @Override
-        public void reserializeReference(ConfigurationNode node, Tuple<MoneyPrize, BigDecimal> reference) throws SerializationException {
+        public void reserializeReference(Node node, Tuple<MoneyPrize, BigDecimal> reference) throws SerializationException {
             throw new UnsupportedOperationException(); //TODO
         }
 

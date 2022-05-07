@@ -1,16 +1,16 @@
 package dev.flashlabs.cratecrate.component.prize;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Range;
 import dev.flashlabs.cratecrate.CrateCrate;
 import dev.flashlabs.cratecrate.component.Type;
 import dev.flashlabs.cratecrate.internal.Config;
-import dev.flashlabs.cratecrate.internal.SerializationException;
 import dev.flashlabs.cratecrate.internal.Serializers;
-import ninja.leaping.configurate.ConfigurationNode;
-import org.spongepowered.api.Sponge;
+import dev.willbanders.storm.Storm;
+import dev.willbanders.storm.config.Node;
+import dev.willbanders.storm.serializer.SerializationException;
 import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.entity.living.player.User;
-import org.spongepowered.api.item.ItemType;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.item.inventory.ItemStackSnapshot;
 import org.spongepowered.api.item.inventory.transaction.InventoryTransactionResult;
@@ -115,16 +115,15 @@ public final class ItemPrize extends Prize<Integer> {
          * type.
          */
         @Override
-        public boolean matches(ConfigurationNode node) {
-            if (!node.getNode("item").isVirtual()) {
-                return true;
+        public boolean matches(Node node) {
+            if (node.get("item").getType() == Node.Type.UNDEFINED) {
+                try {
+                    node.get(Serializers.ITEM_TYPE);
+                } catch (SerializationException ignored) {
+                    return false;
+                }
             }
-            try {
-                Serializers.ITEM_TYPE.deserialize(node);
-                return true;
-            } catch (Exception ignored) {
-                return false;
-            }
+            return true;
         }
 
         /**
@@ -139,23 +138,16 @@ public final class ItemPrize extends Prize<Integer> {
          * }</pre>
          */
         @Override
-        public ItemPrize deserializeComponent(ConfigurationNode node) throws SerializationException {
-            Optional<String> name = Optional.ofNullable(node.getNode("name").getString());
-            Optional<ImmutableList<String>> lore = node.getNode("lore").isList()
-                ? Optional.of(node.getChildrenList().stream()
-                    .map(s -> s.getString(""))
-                    .collect(ImmutableList.toImmutableList())
-                )
-                : Optional.empty();
-            Optional<ItemStackSnapshot> icon = !node.getNode("icon").isVirtual()
-                ? Optional.of(Serializers.ITEM_STACK.deserialize(node.getNode("icon")).createSnapshot())
-                : Optional.empty();
-            ItemStackSnapshot item = Serializers.ITEM_STACK.deserialize(node.getNode("item")).createSnapshot();
+        public ItemPrize deserializeComponent(Node node) throws SerializationException {
+            Optional<String> name = node.get("name", Storm.STRING.optional());
+            Optional<ImmutableList<String>> lore = node.get("lore", Storm.LIST.of(Storm.STRING).optional()).map(ImmutableList::copyOf);
+            Optional<ItemStackSnapshot> icon = node.get("icon", Serializers.ITEM_STACK.optional()).map(ItemStack::createSnapshot);
+            ItemStackSnapshot item = node.get("item", Serializers.ITEM_STACK).createSnapshot();
             return new ItemPrize(String.valueOf(node.getKey()), name, lore, icon, item);
         }
 
         @Override
-        public void reserializeComponent(ConfigurationNode node, ItemPrize component) throws SerializationException {
+        public void reserializeComponent(Node node, ItemPrize component) throws SerializationException {
             throw new UnsupportedOperationException(); //TODO
         }
 
@@ -173,14 +165,14 @@ public final class ItemPrize extends Prize<Integer> {
          * }</pre>
          */
         @Override
-        public Tuple<ItemPrize, Integer> deserializeReference(ConfigurationNode node, List<? extends ConfigurationNode> values) throws SerializationException {
+        public Tuple<ItemPrize, Integer> deserializeReference(Node node, List<? extends Node> values) throws SerializationException {
             ItemPrize prize;
-            if (node.isMap()) {
+            if (node.getType() == Node.Type.OBJECT) {
                 prize = deserializeComponent(node);
-                prize = new ItemPrize("ItemPrize@" + Arrays.toString(node.getPath()), prize.name, prize.lore, prize.icon, prize.item);
+                prize = new ItemPrize("ItemPrize@" + node.getPath(), prize.name, prize.lore, prize.icon, prize.item);
                 Config.PRIZES.put(prize.id, prize);
             } else {
-                String identifier = node.getString("");
+                String identifier = node.get(Storm.STRING);
                 if (Config.PRIZES.containsKey(identifier)) {
                     prize = (ItemPrize) Config.PRIZES.get(identifier);
                 } else {
@@ -189,13 +181,16 @@ public final class ItemPrize extends Prize<Integer> {
                     Config.PRIZES.put(prize.id, prize);
                 }
             }
-            //TODO: Validate reference value counts
-            int quantity = (!values.isEmpty() ? values.get(0) : node.getNode("quantity")).getInt(1);
+            if (values.isEmpty() && node.get("quantity").getType() == Node.Type.UNDEFINED) {
+                throw new SerializationException(node, "Expected a reference value for the quantity.");
+            }
+            int quantity = (!values.isEmpty() ? values.get(values.size() - 1) : node.get("quantity"))
+                .get(Storm.INTEGER.range(Range.closed(1, prize.item.getType().getMaxStackQuantity())));
             return Tuple.of(prize, quantity);
         }
 
         @Override
-        public void reserializeReference(ConfigurationNode node, Tuple<ItemPrize, Integer> reference) throws SerializationException {
+        public void reserializeReference(Node node, Tuple<ItemPrize, Integer> reference) throws SerializationException {
             throw new UnsupportedOperationException(); //TODO
         }
 

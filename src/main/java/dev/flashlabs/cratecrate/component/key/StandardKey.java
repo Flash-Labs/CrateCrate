@@ -1,13 +1,15 @@
 package dev.flashlabs.cratecrate.component.key;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Range;
 import dev.flashlabs.cratecrate.CrateCrate;
 import dev.flashlabs.cratecrate.component.Type;
 import dev.flashlabs.cratecrate.internal.Config;
-import dev.flashlabs.cratecrate.internal.SerializationException;
 import dev.flashlabs.cratecrate.internal.Serializers;
 import dev.flashlabs.cratecrate.internal.Storage;
-import ninja.leaping.configurate.ConfigurationNode;
+import dev.willbanders.storm.Storm;
+import dev.willbanders.storm.config.Node;
+import dev.willbanders.storm.serializer.SerializationException;
 import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.item.ItemTypes;
@@ -129,7 +131,7 @@ public final class StandardKey extends Key {
         }
 
         @Override
-        public boolean matches(ConfigurationNode node) {
+        public boolean matches(Node node) {
             return true;
         }
 
@@ -144,22 +146,15 @@ public final class StandardKey extends Key {
          * }</pre>
          */
         @Override
-        public StandardKey deserializeComponent(ConfigurationNode node) throws SerializationException {
-            Optional<String> name = Optional.ofNullable(node.getNode("name").getString());
-            Optional<ImmutableList<String>> lore = node.getNode("lore").isList()
-                ? Optional.of(node.getChildrenList().stream()
-                    .map(s -> s.getString(""))
-                    .collect(ImmutableList.toImmutableList())
-                )
-                : Optional.empty();
-            Optional<ItemStackSnapshot> icon = !node.getNode("icon").isVirtual()
-                ? Optional.of(Serializers.ITEM_STACK.deserialize(node.getNode("icon")).createSnapshot())
-                : Optional.empty();
+        public StandardKey deserializeComponent(Node node) throws SerializationException {
+            Optional<String> name = node.get("name", Storm.STRING.optional());
+            Optional<ImmutableList<String>> lore = node.get("lore", Storm.LIST.of(Storm.STRING).optional()).map(ImmutableList::copyOf);
+            Optional<ItemStackSnapshot> icon = node.get("icon", Serializers.ITEM_STACK.optional()).map(ItemStack::createSnapshot);
             return new StandardKey(String.valueOf(node.getKey()), name, lore, icon);
         }
 
         @Override
-        public void reserializeComponent(ConfigurationNode node, StandardKey component) throws SerializationException {
+        public void reserializeComponent(Node node, StandardKey component) throws SerializationException {
             throw new UnsupportedOperationException(); //TODO
         }
 
@@ -177,14 +172,14 @@ public final class StandardKey extends Key {
          * }</pre>
          */
         @Override
-        public Tuple<StandardKey, Integer> deserializeReference(ConfigurationNode node, List<? extends ConfigurationNode> values) throws SerializationException {
+        public Tuple<StandardKey, Integer> deserializeReference(Node node, List<? extends Node> values) throws SerializationException {
             StandardKey key;
-            if (node.isMap()) {
+            if (node.getType() == Node.Type.OBJECT) {
                 key = deserializeComponent(node);
-                key = new StandardKey("StandardKey@" + Arrays.toString(node.getPath()), key.name, key.lore, key.icon);
+                key = new StandardKey("StandardKey@" + node.getPath(), key.name, key.lore, key.icon);
                 Config.KEYS.put(key.id, key);
             } else {
-                String identifier = Optional.ofNullable(node.getString()).orElse("");
+                String identifier = node.get(Storm.STRING);
                 if (Config.KEYS.containsKey(identifier)) {
                     key = (StandardKey) Config.KEYS.get(identifier);
                 } else {
@@ -192,12 +187,16 @@ public final class StandardKey extends Key {
                     Config.KEYS.put(key.id, key);
                 }
             }
-            int quantity = (!values.isEmpty() ? values.get(0) : node.getNode("quantity")).getInt(1);
+            if (values.isEmpty() && node.get("quantity").getType() == Node.Type.UNDEFINED) {
+                throw new SerializationException(node, "Expected a reference value for the quantity.");
+            }
+            int quantity = (!values.isEmpty() ? values.get(values.size() - 1) : node.get("quantity"))
+                .get(Storm.INTEGER.range(Range.atLeast(1)));
             return Tuple.of(key, quantity);
         }
 
         @Override
-        public void reserializeReference(ConfigurationNode node, Tuple<StandardKey, Integer> reference) throws SerializationException {
+        public void reserializeReference(Node node, Tuple<StandardKey, Integer> reference) throws SerializationException {
             throw new UnsupportedOperationException(); //TODO
         }
 
