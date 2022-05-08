@@ -13,9 +13,10 @@ import org.spongepowered.api.command.args.CommandContext;
 import org.spongepowered.api.command.args.GenericArguments;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.User;
+import org.spongepowered.api.service.pagination.PaginationList;
 import org.spongepowered.api.text.Text;
+import org.spongepowered.api.text.format.TextColors;
 
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 public final class List extends Command {
@@ -47,7 +48,7 @@ public final class List extends Command {
         }
         if (src instanceof Player && !args.hasFlag("text")) {
             Inventory.page(
-                Text.of(user.getName() + "'s Keys"),
+                Text.of(Text.of(TextColors.YELLOW, user.getName(), TextColors.GOLD, "'s Keys")),
                 Config.KEYS.values().stream()
                     .map(c -> Element.of(c.icon(c.quantity(user))))
                     .filter(e -> e.getItem().getQuantity() > 0)
@@ -55,10 +56,13 @@ public final class List extends Command {
                 Inventory.CLOSE
             ).open((Player) src);
         } else {
-            CommandUtils.paginate(src, Config.KEYS.values().stream()
-                .map(k -> k.name(k.quantity(user)))
-                .toArray(Text[]::new)
-            );
+            PaginationList.builder()
+                .title(Text.of(TextColors.YELLOW, user.getName(), TextColors.GOLD, "'s Keys"))
+                .padding(Text.of(TextColors.GRAY, "="))
+                .contents(Config.KEYS.values().stream()
+                    .map(k -> k.name(k.quantity(user)))
+                    .toArray(Text[]::new))
+                .sendTo(src);
         }
         return CommandResult.success();
     }
