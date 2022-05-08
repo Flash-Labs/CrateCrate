@@ -9,12 +9,14 @@ import dev.flashlabs.cratecrate.internal.Serializers;
 import dev.willbanders.storm.Storm;
 import dev.willbanders.storm.config.Node;
 import dev.willbanders.storm.serializer.SerializationException;
+import org.apache.commons.lang3.text.WordUtils;
 import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.item.ItemTypes;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.item.inventory.ItemStackSnapshot;
 import org.spongepowered.api.text.Text;
+import org.spongepowered.api.text.format.TextColors;
 import org.spongepowered.api.text.serializer.TextSerializers;
 import org.spongepowered.api.util.Tuple;
 import org.spongepowered.api.world.Location;
@@ -57,13 +59,13 @@ public final class Crate extends Component<Void> {
     }
 
     /**
-     * Returns the name of this crate, defaulting to the id.
+     * Returns the name of this crate, defaulting to the capitalized id.
      */
     @Override
     public Text name(Optional<Void> ignored) {
         return name
-            .map(TextSerializers.FORMATTING_CODE::deserialize)
-            .orElseGet(() -> Text.of(id));
+            .map(n -> TextSerializers.FORMATTING_CODE.deserialize("&f" + n))
+            .orElseGet(() -> Text.of(TextColors.WHITE, WordUtils.capitalize(id.replace("-", " "))));
     }
 
     /**
@@ -72,7 +74,7 @@ public final class Crate extends Component<Void> {
     @Override
     public List<Text> lore(Optional<Void> ignored) {
         return lore.orElse(ImmutableList.of()).stream()
-            .map(TextSerializers.FORMATTING_CODE::deserialize)
+            .map(l -> TextSerializers.FORMATTING_CODE.deserialize("&f" + l))
             .collect(Collectors.toList());
     }
 
@@ -88,7 +90,7 @@ public final class Crate extends Component<Void> {
         if (!base.get(Keys.DISPLAY_NAME).isPresent()) {
             base.offer(Keys.DISPLAY_NAME, name(ignored));
         }
-        if (lore.isPresent() && !base.get(Keys.ITEM_LORE).isPresent()) {
+        if (!base.get(Keys.ITEM_LORE).isPresent()) {
             base.offer(Keys.ITEM_LORE, lore(ignored));
         }
         return base;

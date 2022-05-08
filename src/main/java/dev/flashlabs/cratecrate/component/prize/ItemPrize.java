@@ -9,16 +9,18 @@ import dev.flashlabs.cratecrate.internal.Serializers;
 import dev.willbanders.storm.Storm;
 import dev.willbanders.storm.config.Node;
 import dev.willbanders.storm.serializer.SerializationException;
+import org.apache.commons.lang3.text.WordUtils;
+import org.spongepowered.api.data.DataQuery;
 import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.item.inventory.ItemStackSnapshot;
 import org.spongepowered.api.item.inventory.transaction.InventoryTransactionResult;
 import org.spongepowered.api.text.Text;
+import org.spongepowered.api.text.format.TextColors;
 import org.spongepowered.api.text.serializer.TextSerializers;
 import org.spongepowered.api.util.Tuple;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -47,13 +49,18 @@ public final class ItemPrize extends Prize<Integer> {
     }
 
     /**
-     * Returns the name of this key, defaulting to the id. If a reference value
-     * is given, it is appended to the name in the form {@code (x#)}.
+     * Returns the name of this key, defaulting to the translation of the item
+     * if no keys are set else the capitalized id without a namespace. If a
+     * reference value is given, it is appended to the name in the form
+     * {@code (x#)}.
      */
     @Override
     public Text name(Optional<Integer> quantity) {
         return Text.of(
-            TextSerializers.FORMATTING_CODE.deserialize(name.orElse(id)),
+            TextColors.WHITE,
+            TextSerializers.FORMATTING_CODE.deserialize(name.orElseGet(() -> item.toContainer().get(DataQuery.of("UnsafeData")).isPresent()
+                ? WordUtils.capitalize(id.replace("-", " "))
+                : item.getTranslation().get())),
             quantity.map(q -> " (x" + q + ")").orElse("")
         );
     }
@@ -65,7 +72,7 @@ public final class ItemPrize extends Prize<Integer> {
     @Override
     public List<Text> lore(Optional<Integer> unused) {
         return lore.orElse(ImmutableList.of()).stream()
-            .map(TextSerializers.FORMATTING_CODE::deserialize)
+            .map(l -> TextSerializers.FORMATTING_CODE.deserialize("&f" + l))
             .collect(Collectors.toList());
     }
 
@@ -83,7 +90,7 @@ public final class ItemPrize extends Prize<Integer> {
         if (!base.get(Keys.DISPLAY_NAME).isPresent()) {
             base.offer(Keys.DISPLAY_NAME, name(quantity.filter(q -> q > base.getMaxStackQuantity())));
         }
-        if (lore.isPresent() && !base.get(Keys.ITEM_LORE).isPresent()) {
+        if (!base.get(Keys.ITEM_LORE).isPresent()) {
             base.offer(Keys.ITEM_LORE, lore(Optional.empty()));
         }
         base.setQuantity(quantity.filter(q -> q <= base.getMaxStackQuantity()).orElse(1));

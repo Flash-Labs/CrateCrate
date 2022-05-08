@@ -8,6 +8,7 @@ import dev.flashlabs.cratecrate.internal.Serializers;
 import dev.willbanders.storm.Storm;
 import dev.willbanders.storm.config.Node;
 import dev.willbanders.storm.serializer.SerializationException;
+import org.apache.commons.lang3.text.WordUtils;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.data.key.Keys;
@@ -58,26 +59,28 @@ public final class CommandPrize extends Prize<String> {
     }
 
     /**
-     * Returns the name of this prize, defaulting to the command prefixed with
-     * {@code '/'}. If a reference value is given, it replaces {@code ${value}}.
+     * Returns the name of this prize, defaulting to the command (prefixed with
+     * {@code '/'} if this prize is an inline reference else the capitalized id.
+     * If a reference value is given, it replaces {@code ${value}}.
      */
     @Override
     public Text name(Optional<String> value) {
-        String base = name.orElseGet(() -> "/" + command);
+        String base = name.orElseGet(() -> id.startsWith("/") ? id : WordUtils.capitalize(id.replace("-", " ")));
         base = base.replaceAll("\\$\\{value}", value.orElse("${value}"));
-        return TextSerializers.FORMATTING_CODE.deserialize(base);
+        return TextSerializers.FORMATTING_CODE.deserialize("&f" + base);
     }
 
     /**
-     * Returns the lore of this prize, defaulting to an empty list. If a
+     * Returns the lore of this prize, defaulting to an empty list if this prize
+     * is an inline reference else the command (prefixed with {@code '/'}). If a
      * reference value is given, it replaces {@code ${value}}.
      */
     @Override
     public List<Text> lore(Optional<String> value) {
-        return lore.orElse(ImmutableList.of()).stream()
+        return lore.orElse(id.startsWith("/") ? ImmutableList.of() : ImmutableList.of("/" + command)).stream()
             .map(s -> {
                 s = s.replaceAll("\\$\\{value}", value.orElse("${value}"));
-                return TextSerializers.FORMATTING_CODE.deserialize(s);
+                return TextSerializers.FORMATTING_CODE.deserialize("&f" + s);
             })
             .collect(Collectors.toList());
     }
@@ -94,7 +97,7 @@ public final class CommandPrize extends Prize<String> {
         if (!base.get(Keys.DISPLAY_NAME).isPresent()) {
             base.offer(Keys.DISPLAY_NAME, name(value));
         }
-        if (lore.isPresent() && !base.get(Keys.ITEM_LORE).isPresent()) {
+        if (!base.get(Keys.ITEM_LORE).isPresent()) {
             base.offer(Keys.ITEM_LORE, lore(value));
         }
         return base;

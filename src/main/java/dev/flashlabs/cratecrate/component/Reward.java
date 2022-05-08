@@ -9,17 +9,22 @@ import dev.flashlabs.cratecrate.internal.Serializers;
 import dev.willbanders.storm.Storm;
 import dev.willbanders.storm.config.Node;
 import dev.willbanders.storm.serializer.SerializationException;
+import org.apache.commons.lang3.text.WordUtils;
 import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.item.ItemTypes;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.item.inventory.ItemStackSnapshot;
 import org.spongepowered.api.text.Text;
+import org.spongepowered.api.text.format.TextColors;
 import org.spongepowered.api.text.serializer.TextSerializers;
 import org.spongepowered.api.util.Tuple;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public final class Reward extends Component<BigDecimal> {
@@ -48,17 +53,17 @@ public final class Reward extends Component<BigDecimal> {
 
     /**
      * Returns the name of this reward, defaulting to either the name of the
-     * first prize (if only one prize exists) or this reward's id (if multiple
-     * prizes exist). The reference value is currently unused.
+     * first prize (if only one prize exists) or this reward's capitalized id
+     * (if multiple prizes exist). The reference value is currently unused.
      */
     @Override
     public Text name(Optional<BigDecimal> unused) {
         if (name.isPresent()) {
-            return TextSerializers.FORMATTING_CODE.deserialize(name.get());
+            return TextSerializers.FORMATTING_CODE.deserialize("&f" + name.get());
         } else if (prizes.size() == 1) {
             return prizes.get(0).getFirst().name(Optional.of(prizes.get(0).getSecond()));
         } else {
-            return Text.of(id);
+            return Text.of(TextColors.WHITE, WordUtils.capitalize(id.replace("-", " ")));
         }
     }
 
@@ -74,7 +79,7 @@ public final class Reward extends Component<BigDecimal> {
             return lore.get().stream()
                 .map(s -> {
                     s = s.replaceAll("\\$\\{weight}", weight.map(String::valueOf).orElse("${weight}"));
-                    return TextSerializers.FORMATTING_CODE.deserialize(s);
+                    return TextSerializers.FORMATTING_CODE.deserialize("&f" + s);
                 })
                 .collect(Collectors.toList());
         } else if (prizes.size() == 1) {

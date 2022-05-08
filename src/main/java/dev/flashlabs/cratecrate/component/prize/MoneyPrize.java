@@ -21,13 +21,14 @@ import org.spongepowered.api.service.economy.EconomyService;
 import org.spongepowered.api.service.economy.transaction.ResultType;
 import org.spongepowered.api.service.economy.transaction.TransactionResult;
 import org.spongepowered.api.text.Text;
+import org.spongepowered.api.text.format.TextColors;
 import org.spongepowered.api.text.serializer.TextSerializers;
 import org.spongepowered.api.util.Tuple;
 
 import java.math.BigDecimal;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public final class MoneyPrize extends Prize<BigDecimal> {
@@ -55,22 +56,20 @@ public final class MoneyPrize extends Prize<BigDecimal> {
 
     /**
      * Returns the name of this prize, defaulting to the format method of the
-     * currency. If a reference value is given and the name is defined, it
-     * replaces {@code ${amount}}. Else, if a reference value is not given and
-     * the name is not defined then {@code BigDecimal.ZERO} is used as the
-     * default amount.
+     * currency. If a reference value is given, it replaces {@code ${amount}}.
      */
     @Override
     public Text name(Optional<BigDecimal> amount) {
         return name
             .map(s -> {
                 s = s.replaceAll("\\$\\{amount}", amount.map(String::valueOf).orElse("${amount}"));
-                return TextSerializers.FORMATTING_CODE.deserialize(s);
+                return TextSerializers.FORMATTING_CODE.deserialize("&f" + s);
             })
-            .orElseGet(() -> currency
+            .orElseGet(() -> Text.of(TextColors.WHITE, currency
                 .orElse(Sponge.getServiceManager().provideUnchecked(EconomyService.class).getDefaultCurrency())
                 .format(amount.orElse(BigDecimal.ZERO))
-            );
+                .replace(Pattern.compile("0+(\\.0+)"), Text.of("${amount}"))
+            ));
     }
 
     /**
@@ -82,7 +81,7 @@ public final class MoneyPrize extends Prize<BigDecimal> {
         return lore.orElse(ImmutableList.of()).stream()
             .map(s -> {
                 s = s.replaceAll("\\$\\{amount}", amount.map(String::valueOf).orElse("${amount}"));
-                return TextSerializers.FORMATTING_CODE.deserialize(s);
+                return TextSerializers.FORMATTING_CODE.deserialize("&f" + s);
             })
             .collect(Collectors.toList());
     }
@@ -103,7 +102,7 @@ public final class MoneyPrize extends Prize<BigDecimal> {
         if (!base.get(Keys.DISPLAY_NAME).isPresent()) {
             base.offer(Keys.DISPLAY_NAME, name(value));
         }
-        if (lore.isPresent() && !base.get(Keys.ITEM_LORE).isPresent()) {
+        if (!base.get(Keys.ITEM_LORE).isPresent()) {
             base.offer(Keys.ITEM_LORE, lore(value));
         }
         return base;
