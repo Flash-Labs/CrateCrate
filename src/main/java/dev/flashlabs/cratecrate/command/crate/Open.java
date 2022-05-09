@@ -19,10 +19,10 @@ public final class Open extends Command {
 
     public static final Text USAGE = CommandUtils.usage(
         "/crate crate open ",
-        "Gives a reward to a player as if given through this crate.",
+        "Opens a crate for a player, which bypasses keys. Compared to give, open includes any opening effects and rolls a random reward.",
         CommandUtils.argument("player", false, "A username or selector matching a single player, defaulting to the player executing this command."),
         CommandUtils.argument("crate", true, "A registered crate id."),
-        CommandUtils.argument("position", false, "An xyz position or one of the special values #me (source's position) or #target (source's target block), defaulting to the position of the source executing this command.")
+        CommandUtils.argument("position", false, "An xyz position or either #me/#target (source position / target block), defaulting to the player's position.")
     );
 
     private Open(Command.Builder builder) {
@@ -43,7 +43,7 @@ public final class Open extends Command {
     public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
         Player player = args.requireOne("player");
         Crate crate = args.requireOne("crate");
-        Vector3d position = args.requireOne("position");
+        Vector3d position = args.<Vector3d>getOne("position").orElseGet(player::getPosition);
         if (crate.open(player, player.getLocation().setPosition(position))) {
             CrateCrate.get().sendMessage(src, "command.crate.open.success",
                 "player", player.getName(),

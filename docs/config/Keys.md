@@ -10,7 +10,7 @@ currently only one key type:
 A key that is tracked virtually for each user.
 
 ```java
-<id> {
+<id> = {
     //name, lore, icon
 }
 ```
@@ -19,7 +19,7 @@ A key that is tracked virtually for each user.
 
 | Name | Type | Description | Default |
 | --- | --- | --- | --- |
-| `name` | Text | The key name, inherited from Component | This key's `id` |
+| `name` | Text | The key name, inherited from Component | This key's capitalized `id` |
 | `lore` | List<Text> | The key lore, inherited from Component | An empty list |
 | `icon` | Item | The key icon, inherited from Component | A `tripwire_hook` with the above `name`/`lore` |
 | |
@@ -58,7 +58,7 @@ A standard key with `name`/`lore`/`icon`. Though the default icon is a
 `tripwire_hook`, this adds an enchantment effect for style points.
 
 ```java
-example {
+example = {
     name = "&eExample Key"
     lore = ["&6An example key"]
     icon = {

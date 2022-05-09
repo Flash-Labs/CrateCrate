@@ -24,11 +24,11 @@ public final class Give extends Command {
 
     public static final Text USAGE = CommandUtils.usage(
         "/crate crate give ",
-        "Gives a reward to a player as if received through this crate.",
+        "Gives a reward to a player as if received through a crate. Compared to open, give does not include any opening effects and gives a specific reward.",
         CommandUtils.argument("player", false, "A username or selector matching a single player, defaulting to the player executing this command."),
         CommandUtils.argument("crate", true, "A registered crate id."),
         CommandUtils.argument("reward", true, "A registered reward id."),
-        CommandUtils.argument("position", false, "An xyz position or one of the special values #me (source's position) or #target (source's target block), defaulting to the position of the source executing this command.")
+        CommandUtils.argument("position", false, "An xyz position or either #me/#target (source position / target block), defaulting to the player's position.")
     );
 
     @Inject
@@ -52,7 +52,7 @@ public final class Give extends Command {
         Player player = args.requireOne("player");
         Crate crate = args.requireOne("crate");
         Reward reward = args.requireOne("reward");
-        Vector3d position = args.requireOne("position");
+        Vector3d position = args.<Vector3d>getOne("position").orElseGet(player::getPosition);
         if (crate.give(player, Tuple.of(reward, BigDecimal.ZERO), player.getLocation().setPosition(position))) {
             CrateCrate.get().sendMessage(src, "command.crate.give.success",
                 "player", player.getName(),

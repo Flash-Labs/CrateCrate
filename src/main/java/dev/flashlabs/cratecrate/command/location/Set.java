@@ -24,7 +24,7 @@ public final class Set extends Command {
 
     public static final Text USAGE = CommandUtils.usage(
         "/crate location set ",
-        "Sets a registered crate location.",
+        "Sets a registered crate location. This command does not change the block at the given location; whatever block is present will work with the crate.",
         CommandUtils.argument("location", true, "A world (optional for players) and xyz position."),
         CommandUtils.argument("crate", true, "A registered crate id.")
     );

@@ -2,168 +2,213 @@
 
 The available commands are as follows:
 
- - [`/cratecrate`](#cratecrate)
- - [`/cratecrate crate`](#cratecrate-crate)
-    - [`/cratecrate crate open`](#cratecrate-crate-open)
-    - [`/cratecrate crate give`](#cratecrate-crate-give)
- - [`/cratecrate reward`](#cratecrate-reward)
-    - [`/cratecrate reward give`](#cratecrate-reward-give)
- - [`/cratecrate prize`](#cratecrate-prize)
-    - [`/cratecrate prize give`](#cratecrate-prize-give)
- - [`/cratecrate key`](#cratecrate-key)
-    - [`/cratecrate key balance`](#cratecrate-key-balance)
-    - [`/cratecrate key give`](#cratecrate-key-give)
-    - [`/cratecrate key take`](#cratecrate-key-take)
- - [`/cratecrate location`](#cratecrate-location)
-    - [`/cratecrate location set`](#cratecrate-location-set)
-    - [`/cratecrate location delete`](#cratecrate-location-delete)
+ - [`/crate`](#crate)
+ - [`/crate crate`](#crate-crate)
+    - [`/crate crate give`](#crate-crate-give)
+    - [`/crate crate list`](#crate-crate-list)
+    - [`/crate crate open`](#crate-crate-open)
+ - [`/crate key`](#crate-key)
+   - [`/crate key balance`](#crate-key-balance)
+   - [`/crate key give`](#crate-key-give)
+   - [`/crate key list`](#crate-crate-list)
+   - [`/crate key take`](#crate-key-take)
+ - [`/crate location`](#crate-location)
+    - [`/crate location delete`](#crate-location-delete)
+    - [`/crate location set`](#crate-location-set)
+ - [`/crate prize`](#crate-prize)
+    - [`/crate prize give`](#crate-prize-give)
+- [`/crate reward`](#crate-reward)
+   - [`/crate reward give`](#crate-reward-give)
 
 ---
 
-## `/cratecrate`
+## `/crate`
 
- - Usage: `/cratecrate [subcommand]`
- - Aliases: `/crate`
+ - Usage: `/crate [subcommand ...]`
+    - `[subcommand ...]`: A subcommand (`crate`/`key`/`location`/`prize`/
+      `reward`) and arguments.
+ - Aliases: `/cratecrate`
  - Permission: `cratecrate.command.base`
 
-The base command for CrateCrate, which displays plugin information.
+The base command for CrateCrate.
 
 ---
 
-## `/cratecrate crate`
+## `/crate crate`
 
- - Usage: `/cratecrate crate [subcommand]`
+ - Usage: `/crate crate [subcommand ...]`
+    - `[subcommand ...]`: A crate subcommand (`give`/`list`/`open`) and
+      arguments.
  - Permission: `cratecrate.command.crate.base`
 
 The base command for working with crates.
 
-### `/cratecrate crate open`
+### `/crate crate give`
 
- - Usage: `/cratecrate crate open <player> <crate> [location]`
-    - `<player>`: The player
-    - `<crate>`: The crate id
-    - `[location]`: The location (defaults to the player's location)
- - Permission: `cratecrate.command.crate.open.base`
-
-Opens a crate for a player, which bypasses keys. Unlike `give`, `open` includes
-any opening effects and rolls a random reward.
-
-### `/cratecrate crate give`
-
- - Usage: `/cratecrate crate give <player> <crate> [location] <reward>`
-    - `<player>`: The player
-    - `<crate>`: The crate id
-    - `[location]`: The location (defaults to the player's location)
-    - `<reward>`: The reward id
+ - Usage: `/crate crate give [player] <crate> <reward> [position]`
+    - `[player]`: A username or selector matching a single player, defaulting to
+      the player executing this command.
+    - `<crate>`: A registered crate id.
+    - `<reward>`: A registered reward id.
+    - `[position]`: An xyz position or either `#me`/`#target` (source position /
+      target block), defaulting to the player's position.
  - Permission: `cratecrate.command.crate.give.base`
 
-Gives a reward to a player as if they won it through a crate. Unlike `open`,
+Gives a reward to a player as if received through a crate. Compared to `open`,
 `give` does not include any opening effects and gives a specific reward.
 
+### `/crate crate list`
+
+ - Usage: `/crate crate list [--text]`
+    - `[--text]`: List crates through text rather than GUI (always enabled for
+      console).
+ - Aliases: `/crates`
+ - Permission: `cratecrate.command.crate.list.base`
+
+Displays all crates the source has permission to open.
+
+### `/crate crate open`
+
+ - Usage: `/crate crate open [player] <crate> [position]`
+    - `[player]`: A username or selector matching a single player, defaulting to
+      the player executing this command.
+    - `<crate>`: A registered crate id.
+    - `[position]`: An xyz position or either `#me`/`#target` (source position /
+      target block), defaulting to the player's position.
+ - Permission: `cratecrate.command.crate.open.base`
+
+Opens a crate for a player, which bypasses keys. Compared to `give`, `open`
+includes any opening effects and rolls a random reward.
+
 ---
 
-## `/cratecrate reward`
+## `/crate key`
 
- - Usage: `/cratecrate reward [subcommand]`
- - Permission: `cratecrate.command.reward.base`
+ - Usage: `/crate key [subcommand ...]`
+    - `[subcommand ...]`: A key subcommand (`balance`/`give`/`list`/`take`) and
+      arguments.
+ - Permission: `cratecrate.command.key.base`
 
-The base command for working with rewards.
+The base command for working with keys.
 
-### `/cratecrate reward give`
+### `/crate key balance`
 
- - Usage: `/cratecrate reward give <user> <reward>`
-    - `<user>`: The user
-    - `<reward>`: The reward id
- - Permission: `cratecrate.command.reward.give.base`
+ - Usage: `/crate key balance [user] <key>`
+    - `<user>`: A username or selector matching a single user (online/offline),
+      defaulting to the player executing this command.
+    - `<key>`: A registered key id.
+ - Permission: `cratecrate.command.key.balance.base`
+    - `cratecrate.command.key.balance.other`: View the balance of another
+      `user`.
 
-Gives a reward to a user.
+Displays the user's balance of a single key. To display all keys, use `list`.
+
+### `/crate key give`
+
+ - Usage: `/crate key give [user] <key> <quantity>`
+    - `[user]`: A username or selector matching a single user (online/offline),
+      defaulting to the player executing this command.
+    - `<key>`: A registered key id.
+    - `<quantity>`: An integer quantity, which must be greater than `0` and no
+      greater than the user's current balance.
+ - Permission: `cratecrate.command.key.give.base`
+
+Gives a key to a user.
+
+### `/crate key list`
+
+ - Usage: `/crate key list [user] [--text]`
+    - `[user]`: A username or selector matching a single user (online/offline),
+      defaulting to the player executing this command.
+    - `[--text]`: List keys through text rather than GUI (always enabled for
+      console).
+ - Permission: `cratecrate.command.key.list.base`
+    - `cratecrate.command.key.list.other`: View the keys of another `user`.
+
+Lists all of a user's keys.
+
+### `/crate key take`
+
+ - Usage: `/crate key take [user] <key> <quantity>`
+    - `[user]`: A username or selector matching a single user (online/offline),
+      defaulting to the player executing this command.
+    - `<key>`: A registered key id.
+    - `<quantity>`: An integer quantity, greater than `0`
+ - Permission: `cratecrate.command.key.give.base`
+
+Takes a quantity of a key from a user.
 
 ---
 
-## `/cratecrate prize`
+## `/crate location`
 
-- Usage: `/cratecrate prize [subcommand]`
-- Permission: `cratecrate.command.prize.base`
+ - Usage: `/crate location [subcommand ...]`
+    - `[subcommand ...]`: A location subcommand (`delete`/`set`) and arguments.
+ - Permission: `cratecrate.command.location.base`
+
+The base command for working with locations.
+
+### `/crate location delete`
+
+ - Usage: `/crate location delete <location>`
+    - `<location>`: A world (optional for players) and xyz position.
+ - Permission: `cratecrate.command.location.delete.base`
+
+Deletes a registered crate location.
+
+### `/crate location set`
+
+ - Usage: `/crate location set <location> <crate>`
+    - `<location>`: A world (optional for players) and xyz position.
+   - `<crate>`: A registered crate id.
+ - Permission: `cratecrate.command.location.set.base`
+
+Sets a registered crate location. This command does not change the block at the
+given location; whatever block is present will work with the crate.
+
+---
+
+## `/crate prize`
+
+ - Usage: `/crate prize [subcommand ...]`
+    - `[subcommand ...]`: A prize subcommand (`give`) and arguments.
+ - Permission: `cratecrate.command.prize.base`
 
 The base command for working with prizes.
 
-### `/cratecrate prize give`
+### `/crate prize give`
 
- - Usage: `/cratecrate prize give <user> <prize> [value]`
-    - `<user>`: The user
-    - `<prize>`: The prize id
-    - `[value]`: The reference value of the prize (see below)
+ - Usage: `/crate prize give [user] <prize> [value]`
+    - `[user]`: A username or selector matching a single user (online/offline),
+     defaulting to the player executing this command.
+    - `<prize>`: A registered prize id.
+    - `[value]`: A reference value for the prize (varies by type, see below).
  - Permission: `cratecrate.command.prize.give.base`
 
 Gives a prize to a user. The `value` argument depends on the type of the prize:
 
- - `CommandPrize`: A `String` used as the `${value}` placeholder
- - `ItemPrize`: An `Integer` used as the `quantity`
+ - `Command`: The `${value}` placeholder
+ - `Item`: The integer quantity, greater than `0`
+ - `Money`: The decimal amount, greater than `0`
 
 ---
 
-## `/cratecrate key`
+## `/crate reward`
 
-- Usage: `/cratecrate key [subcommand]`
-- Permission: `cratecrate.command.key.base`
+ - Usage: `/crate reward [subcommand ...]`
+    - `[subcommand ...]`: A reward subcommand (`give`) and arguments.
+ - Permission: `cratecrate.command.reward.base`
 
-The base command for working with keys.
+The base command for working with rewards.
 
-### `/cratecrate key balance`
+### `/crate reward give`
 
- - Usage: `/cratecrate key balance <user> <key>`
-    - `<user>`: The user
-    - `<key>`: The key id
- - Permission: `cratecrate.command.key.balance.base`
-    - `cratecrate.command.key.balance.other`: View the balance of another `user`
+ - Usage: `/crate reward give [user] <reward>`
+    - `[user]`: A username or selector matching a single user (online/offline),
+      defaulting to the player executing this command.
+    - `<reward>`: A registered reward id
+ - Permission: `cratecrate.command.reward.give.base`
 
-Displays the user's balance of a key.
-
-### `/cratecrate key give`
-
- - Usage: `/cratecrate key give <user> <key> <quantity>`
-    - `<user>`: The user
-    - `<key>`: The key id
-    - `<quantity>`: An `Integer` quantity, greater than `0`
- - Permission: `cratecrate.command.key.give.base`
-
-Gives a quantity of keys to the user.
-
-### `/cratecrate key take`
-
- - Usage: `/cratecrate key take <user> <key> <quantity>`
-    - `<user>`: The user
-    - `<key>`: The key id
-    - `<quantity>`: An `Integer` quantity, greater than `0`
- - Permission: `cratecrate.command.key.take.base`
-
-Takes a quantity of keys from the user.
-
----
-
-## `/cratecrate location`
-
-- Usage: `/cratecrate location [subcommand]`
-- Permission: `cratecrate.command.location.base`
-
-The base command for working with locations.
-
-### `/cratecrate location set`
-
-- Usage: `/cratecrate location set <location> <crate>`
-   - `<location>`: The location
-   - `<crate>`: The crate id
-- Permission: `cratecrate.command.location.set.base`
-
-Sets a location as a crate. This command does not change the block at the
-location; placing a block normally or using an existing block works as expected.
-
-### `/cratecrate location delete`
-
-- Usage: `/cratecrate location delete <location>`
-   - `<location>`: The location
-- Permission: `cratecrate.command.location.delete.base`
-
-Deletes a location.
+Gives a reward to a user.
 
 ---

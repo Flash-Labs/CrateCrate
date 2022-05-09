@@ -16,7 +16,7 @@ public final class Base extends Command {
     public static final Text USAGE = CommandUtils.usage(
         "/crate ",
         "The base command for CrateCrate.",
-        CommandUtils.argument("...", false, "A subcommand (crate/key/location/prize/reward).")
+        CommandUtils.argument("subcommand ...", false, "A subcommand (crate/key/location/prize/reward) and arguments.")
     );
 
     private Base(Builder builder) {

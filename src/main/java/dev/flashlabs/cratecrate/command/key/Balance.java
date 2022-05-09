@@ -20,7 +20,7 @@ public final class Balance extends Command {
 
     public static final Text USAGE = CommandUtils.usage(
         "/crate key balance ",
-        "Checks the balance of a user's keys.",
+        "Display the user's balance of a single key. To display all keys, use `list`.",
         CommandUtils.argument("user", false, "A username or selector matching a single user (online/offline), defaulting to the player executing this command."),
         CommandUtils.argument("key", true, "A registered key id.")
     );
@@ -31,8 +31,8 @@ public final class Balance extends Command {
             .aliases("balance")
             .permission("cratecrate.command.key.balance.base")
             .elements(
-                GenericArguments.userOrSource(Text.of("user")),
-                GenericArguments.choices(Text.of("key"), Config.KEYS::keySet, Config.KEYS::get)
+                GenericArguments.onlyOne(GenericArguments.userOrSource(Text.of("user"))),
+                GenericArguments.choices(Text.of("key"), Config.KEYS::keySet, Config.KEYS::get, false)
             )
         );
     }

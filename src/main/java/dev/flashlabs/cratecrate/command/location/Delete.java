@@ -24,8 +24,7 @@ public final class Delete extends Command {
     public static final Text USAGE = CommandUtils.usage(
         "/crate location delete ",
         "Deletes a registered crate location.",
-        CommandUtils.argument("location", true, "A world (optional for players) and xyz position."),
-        CommandUtils.argument("crate", true, "A registered crate id.")
+        CommandUtils.argument("location", true, "A world (optional for players) and xyz position.")
     );
 
     @Inject

@@ -24,7 +24,7 @@ public final class List extends Command {
 
     public static final Text USAGE = CommandUtils.usage(
         "/crate crate list ",
-        "Gives a reward to a player as if given through this crate.",
+        "Displays all crates the source has permission to open.",
         CommandUtils.argument("--text", false, "List crates through text rather than GUI (always enabled for console).")
     );
 

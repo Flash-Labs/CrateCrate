@@ -13,8 +13,8 @@ public final class Reward extends Command {
 
     public static final Text USAGE = CommandUtils.usage(
         "/crate reward ",
-        "The base command for rewards.",
-        CommandUtils.argument("...", false, "A reward subcommand (give).")
+        "The base command for working with rewards.",
+        CommandUtils.argument("subcommand ...", false, "A reward subcommand (give) and arguments.")
     );
 
     @Inject

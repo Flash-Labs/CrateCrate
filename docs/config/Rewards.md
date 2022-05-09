@@ -5,7 +5,7 @@ more prizes as well as additional properties to customize how the reward
 interacts with a crate (such as messages or restrictions).
 
 ```java
-<id> {
+<id> = {
     //name, lore, icon
     prizes = [
         <prize-reference>
@@ -75,7 +75,7 @@ rewards = [
 A reward containing the example CommandPrizes.
 
 ```java
-command-prizes {
+command-prizes = {
     prizes = [
         ["greet"]
         ["me", "rolls nat 20"]
@@ -91,7 +91,7 @@ command-prizes {
 A reward containing the example ItemPrizes.
 
 ```java
-item-prizes {
+item-prizes = {
     prizes = [
         ["apple", 1]
         ["monado", 1]
@@ -110,7 +110,7 @@ A reward containing the example MoneyPrizes. Since this requires an economy
 plugin, it is not included in the default config.
 
 ```java
-money-prizes {
+money-prizes = {
     prizes = [
         ["tokens", 100]
         ["$", 250]

@@ -41,7 +41,7 @@ public final class List extends Command {
 
     public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
         User user = args.requireOne("user");
-        if (src != user && !src.hasPermission("cratecrate.command.key.balance.other")) {
+        if (src != user && !src.hasPermission("cratecrate.command.key.list.other")) {
             throw new CommandException(CrateCrate.get().getMessage("command.key.list.other.no-permission", src.getLocale(),
                 "user", user.getName()
             ));

@@ -18,10 +18,10 @@ public final class Take extends Command {
 
     public static final Text USAGE = CommandUtils.usage(
         "/crate key take ",
-        "Takes a key from a user.",
+        "Takes a quantity of a key from a user.",
         CommandUtils.argument("user", false, "A username or selector matching a single user (online/offline), defaulting to the player executing this command."),
         CommandUtils.argument("key", true, "A registered key id."),
-        CommandUtils.argument("quantity", true, "An integer quantity (> 0).")
+        CommandUtils.argument("quantity", true, "An integer quantity, greater than 0 and no greater than the user's current balance.")
     );
 
     @Inject

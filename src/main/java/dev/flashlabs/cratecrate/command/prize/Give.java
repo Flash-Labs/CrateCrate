@@ -27,7 +27,7 @@ public final class Give extends Command {
         "Gives a prize to a user.",
         CommandUtils.argument("user", false, "A username or selector matching a single user (online/offline), defaulting to the player executing this command."),
         CommandUtils.argument("prize", true, "A registered prize id."),
-        CommandUtils.argument("value", false, "A reference value for the prize (varies by type).\n\n - Command: The ${value} placeholder\n - Item: The integer quantity\n - Money: The decimal amount")
+        CommandUtils.argument("value", false, "A reference value for the prize (varies by type).\n\n - Command: The ${value} placeholder.\n - Item: The integer quantity, greater than 0.\n - Money: The decimal amount, greater than 0.")
     );
 
     @Inject

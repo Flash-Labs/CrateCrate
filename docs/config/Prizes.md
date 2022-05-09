@@ -12,9 +12,9 @@ A prize which executes a command when given. If the `command` node is present,
 the prize is matched to this type.
 
 ```java
-<id> {
+<id> = {
     //name, lore, icon
-    command {
+    command = {
         command = "/<command>"
         source = "server"/"player"
         online = true/false
@@ -26,7 +26,7 @@ If only the `command` needs to be specified, prefer setting it directly which
 will use the default values for the other properties.
 
 ```java
-<id> {
+<id> = {
     //name, lore, icon
     command = "/<command>"
 }
@@ -38,9 +38,9 @@ If `name`/`lore`/`icon` are also unspecified, prefer using an inline
 ### Properties
 
 | Name | Type | Description | Default |
-| --- | --- | --- | --- |
-| `name` | Text | The prize name, inherited from Component | The command |
-| `lore` | List<Text> | The prize lore, inherited from Component | An empty list |
+| --- | --- | --- | -- |
+| `name` | Text | The prize name, inherited from Component | This prize's capitalized `id`, or the command if an inline reference |
+| `lore` | List<Text> | The prize lore, inherited from Component | The command, or an empty list if an inline reference |
 | `icon` | Item | The prize icon, inherited from Component | A `filled_map` with the above `name`/`lore` |
 | |
 | `command` | String | The command, supporting placeholders for either `${player}` (if `online = true`) or `${user}` (if `online = false`) and `${value}` | Required |
@@ -82,7 +82,7 @@ prizes = [
 Greets the user with a friendly message.
 
 ```java
-greet {
+greet = {
     name = "Greet"
     lore = ["\"Greets the user\""]
     command = "/say Hello, ${user}"
@@ -102,10 +102,10 @@ prizes = [
 Displays a `/me` action executed by the player
 
 ```java
-me {
+me = {
     name = "Me"
     lore = ["* ${value}"]
-    command {
+    command = {
         command = "/me ${value}"
         source = "player"
     }
@@ -142,9 +142,9 @@ A prize which gives an item when given. If the `item` node is present, the prize
 is matched to this type.
 
 ```java
-<id> {
+<id> = {
     //name, lore, icon
-    item {
+    item = {
         type = "<item-type>"
         name = "name"
         lore = ["line1", "line2", ...]
@@ -152,7 +152,7 @@ is matched to this type.
             ["<enchantment-type>", <level>]
             ...
         ]
-        nbt {
+        nbt = {
             <data>
         }
     }
@@ -163,7 +163,7 @@ If only the `type` needs to be specified, prefer setting it directly which will
 use the default values for the other properties.
 
 ```java
-<id> {
+<id> = {
     //name, lore, icon
     item = "<item-type>"
 }
@@ -176,8 +176,8 @@ If `name`/`lore`/`icon` are also unspecified, prefer using an inline
 
 | Name | Type | Description | Default |
 | --- | --- | --- | --- |
-| `name` | Text | The prize name, inherited from Component | The `item`'s custom name if specified, else the item type |
-| `lore` | List<Text> | The prize lore, inherited from Component | The `item`s lore if specified, else an empty list |
+| `name` | Text | The prize name, inherited from Component | This prize's capitalized `id`, or the item's name for simple items |
+| `lore` | List<Text> | The prize lore, inherited from Component | An empty list |
 | `icon` | Item | The prize icon, inherited from Component | The `item` with the above `name`/`lore` if not specified |
 | |
 | `type` | String | The item type, in the form `<namespace>:<id>` with an optional `/<data>` suffix | Required |
@@ -221,7 +221,7 @@ Gives an apple to the user. The prize itself also has a custom display name and
 lore, which is used in text/menus but does not apply to the item given.
 
 ```java
-apple {
+apple = {
     name = "&cApple"
     lore = ["&7An apple a day keeps the doctor away"]
     item = "minecraft:apple"
@@ -241,8 +241,8 @@ prizes = [
 Gives the player a [powerful sword](https://xenoblade.fandom.com/wiki/Monado).
 
 ```java
-monado {
-    item {
+monado = {
+    item = {
         type = "minecraft:diamond_sword"
         name = "&bMonado"
         lore = ["&f\"Today, we use our power to fell a god...\""]
@@ -282,9 +282,9 @@ economy plugin. If the `money` node is present, the prize is matched to this
 type.
 
 ```java
-<id> {
+<id> = {
     //name, lore, icon
-    money {
+    money = {
         currency = "<currency-type>"
     }
 }
@@ -294,7 +294,7 @@ If only the `currency` needs to be specified, prefer setting it directly which
 will use the default values for the other properties.
 
 ```java
-<id> {
+<id> = {
     //name, lore, icon
     money = "<currency-type>"
 }
@@ -307,9 +307,9 @@ If `name`/`lore`/`icon` are also unspecified, prefer using an inline
 
 | Name | Type | Description | Default |
 | -- | --- | --- | --- |
-| `name` | Text | The prize name, inherited from Component | The `item`'s custom name if specified, else the item type |
-| `lore` | List<Text> | The prize lore, inherited from Component | The `item`s lore if specified, else an empty list |
-| `icon` | Item | The prize icon, inherited from Component | The `item` with the above `name`/`lore` if not specified |
+| `name` | Text | The prize name, inherited from Component | The currency's format |
+| `lore` | List<Text> | The prize lore, inherited from Component | An empty list |
+| `icon` | Item | The prize icon, inherited from Component | A `sunflower` with the above `name`/`lore` if not specified |
 | |
 | `currency` | String | The currency type, in the form `<namespace>:<id>` | Required |
 | |
@@ -349,10 +349,10 @@ Gives a number of tokens to the user. This requires an appropriate currency to
 be defined with the server's economy plugin.
 
 ```java
-tokens {
+tokens = {
     name = "&eTokens"
     lore = ["&6Usable in the Arcade!"]
-    money {
+    money = {
         currency = "<economy-plugin>:tokens" //varies by plugin
     }
 }

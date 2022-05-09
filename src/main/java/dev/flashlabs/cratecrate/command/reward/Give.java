@@ -17,7 +17,7 @@ import org.spongepowered.api.text.Text;
 public final class Give extends Command {
 
     public static final Text USAGE = CommandUtils.usage(
-        "/crate prize give ",
+        "/crate reward give ",
         "Gives a reward to a user.",
         CommandUtils.argument("user", false, "A username or selector matching a single user (online/offline), defaulting to the player executing this command."),
         CommandUtils.argument("reward", true, "A registered reward id.")

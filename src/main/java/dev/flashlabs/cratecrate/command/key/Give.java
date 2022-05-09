@@ -18,10 +18,10 @@ public final class Give extends Command {
 
     public static final Text USAGE = CommandUtils.usage(
         "/crate key give ",
-        "Gives a key to a user.",
+        "Gives a quantity of a key to a user.",
         CommandUtils.argument("user", false, "A username or selector matching a single user (online/offline), defaulting to the player executing this command."),
         CommandUtils.argument("key", true, "A registered key id."),
-        CommandUtils.argument("quantity", true, "An integer quantity (> 0).")
+        CommandUtils.argument("quantity", true, "An integer quantity, greater than 0.")
     );
 
     @Inject

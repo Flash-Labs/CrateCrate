@@ -13,8 +13,8 @@ public final class Key extends Command {
 
     public static final Text USAGE = CommandUtils.usage(
         "/crate key ",
-        "The base command for keys.",
-        CommandUtils.argument("...", false, "A key subcommand (balance/give/list/take).")
+        "The base command for working with keys.",
+        CommandUtils.argument("subcommand ...", false, "A key subcommand (balance/give/list/take) and arguments.")
     );
 
     @Inject

@@ -13,8 +13,8 @@ public final class Location extends Command {
 
     public static final Text USAGE = CommandUtils.usage(
         "/crate location ",
-        "The base command for locations.",
-        CommandUtils.argument("...", false, "A location subcommand (delete/set).")
+        "The base command for working with locations.",
+        CommandUtils.argument("subcommand ...", false, "A location subcommand (delete/set) and arguments.")
     );
 
     @Inject
