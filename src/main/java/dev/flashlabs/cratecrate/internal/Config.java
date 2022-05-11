@@ -7,6 +7,7 @@ import dev.flashlabs.cratecrate.component.Reward;
 import dev.flashlabs.cratecrate.component.Type;
 import dev.flashlabs.cratecrate.component.key.Key;
 import dev.flashlabs.cratecrate.component.prize.Prize;
+import dev.flashlabs.cratecrate.internal.converter.TeslaCrateConverter;
 import dev.willbanders.storm.Storm;
 import dev.willbanders.storm.config.Node;
 import dev.willbanders.storm.format.ParseException;
@@ -36,6 +37,18 @@ public final class Config {
         try {
             Files.createDirectories(DIRECTORY.resolve("config"));
             Node main = load("cratecrate.conf");
+            if (main.get("convert.teslacrate", Storm.BOOLEAN.optional(false))) {
+                CrateCrate.get().getLogger().info("Converting config from TeslaCrate...");
+                TeslaCrateConverter.convert();
+                try {
+                    main.set("convert.teslacrate", false, Storm.BOOLEAN);
+                    Files.write(DIRECTORY.resolve("cratecrate.conf"), Storm.reserialize(main).getBytes());
+                    CrateCrate.get().getLogger().info("Successfully converted the config.");
+                } catch (IOException e) {
+                    CrateCrate.get().getLogger().error("Error saving the config file cratecrate.conf.", e);
+                    throw e;
+                }
+            }
             Node keys = loadComponents("config/keys.conf", Config::resolveKeyType, KEYS);
             Node prizes = loadComponents("config/prizes.conf", Config::resolvePrizeType, PRIZES);
             Node rewards = loadComponents("config/rewards.conf", Config::resolveRewardType, REWARDS);
