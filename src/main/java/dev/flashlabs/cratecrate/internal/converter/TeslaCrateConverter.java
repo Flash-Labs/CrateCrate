@@ -74,7 +74,9 @@ public final class TeslaCrateConverter {
 
     public static void convertCrateComponent(ConfigurationNode from, Node to) {
         convertComponent(from, to);
-        //TODO: broadcast, message, opener, effects
+        to.set("message", from.getNode("message").getString(""), Storm.STRING.optional("").convertDef(true));
+        to.set("broadcast", from.getNode("announcement").getString(""), Storm.STRING.optional("").convertDef(true));
+        //TODO: opener, effects
         from.getNode("keys").getChildrenMap().values().forEach(n -> {
             int index = to.get("keys").getType() == Node.Type.ARRAY ? to.get("keys").getList().size() : 0;
             convertKeyReference(n, to.resolve("keys", index));
@@ -87,7 +89,10 @@ public final class TeslaCrateConverter {
 
     public static void convertRewardComponent(ConfigurationNode from, Node to) {
         convertComponent(from, to);
-        //TODO: announce, limit
+        if (!from.getNode("announce").getBoolean(true)) {
+            to.set("broadcast", "", Storm.STRING);
+        }
+        //TODO: limit
         to.set("prizes", ImmutableList.of(), Storm.LIST);
         from.getNode("prizes").getChildrenMap().values().forEach(n -> {
             convertPrizeReference(n, to.resolve("prizes", to.get("prizes").getList().size()));

@@ -35,6 +35,8 @@ public final class Reward extends Component<BigDecimal> {
     private final Optional<String> name;
     private final Optional<ImmutableList<String>> lore;
     private final Optional<ItemStackSnapshot> icon;
+    private final Optional<String> message;
+    private final Optional<String> broadcast;
     private final ImmutableList<Tuple<? extends Prize, ?>> prizes;
 
     private Reward(
@@ -42,12 +44,16 @@ public final class Reward extends Component<BigDecimal> {
         Optional<String> name,
         Optional<ImmutableList<String>> lore,
         Optional<ItemStackSnapshot> icon,
+        Optional<String> message,
+        Optional<String> broadcast,
         ImmutableList<Tuple<? extends Prize, ?>> prizes
     ) {
         super(id);
         this.name = name;
         this.lore = lore;
         this.icon = icon;
+        this.message = message;
+        this.broadcast = broadcast;
         this.prizes = prizes;
     }
 
@@ -115,6 +121,14 @@ public final class Reward extends Component<BigDecimal> {
         return base;
     }
 
+    public Optional<String> message() {
+        return message;
+    }
+
+    public Optional<String> broadcast() {
+        return broadcast;
+    }
+
     public ImmutableList<Tuple<? extends Prize, ?>> prizes() {
         return prizes;
     }
@@ -143,6 +157,8 @@ public final class Reward extends Component<BigDecimal> {
          *     name: Optional<String>
          *     lore: Optional<List<String>>
          *     icon: Optional<ItemStack>
+         *     message: Optional<String>
+         *     broadcast: Optional<String>
          *     prizes: List<PrizeReference>
          * }</pre>
          */
@@ -151,6 +167,8 @@ public final class Reward extends Component<BigDecimal> {
             Optional<String> name = node.get("name", Storm.STRING.optional());
             Optional<ImmutableList<String>> lore = node.get("lore", Storm.LIST.of(Storm.STRING).optional()).map(ImmutableList::copyOf);
             Optional<ItemStackSnapshot> icon = node.get("icon", Serializers.ITEM_STACK.optional()).map(ItemStack::createSnapshot);
+            Optional<String> message = node.get("message", Storm.STRING.optional());
+            Optional<String> broadcast = node.get("broadcast", Storm.STRING.optional());
             ImmutableList<Tuple<? extends Prize, ?>> prizes = node.get("prizes", Storm.LIST.of(n -> n).optional(ImmutableList.of())).stream()
                 .map(n -> {
                     Node component = n.getType() == Node.Type.ARRAY ? n.resolve(0) : n;
@@ -158,7 +176,7 @@ public final class Reward extends Component<BigDecimal> {
                     return Config.resolvePrizeType(component).deserializeReference(component, values);
                 })
                 .collect(ImmutableList.toImmutableList());
-            return new Reward(String.valueOf(node.getKey()), name, lore, icon, ImmutableList.copyOf(prizes));
+            return new Reward(String.valueOf(node.getKey()), name, lore, icon, message, broadcast, ImmutableList.copyOf(prizes));
         }
 
         @Override
@@ -187,10 +205,10 @@ public final class Reward extends Component<BigDecimal> {
             if (node.getType() == Node.Type.OBJECT) {
                 if (node.get("prizes").getType() != Node.Type.UNDEFINED) {
                     reward = deserializeComponent(node);
-                    reward = new Reward("Reward@" + node.getPath(), reward.name, reward.lore, reward.icon, reward.prizes);
+                    reward = new Reward("Reward@" + node.getPath(), reward.name, reward.lore, reward.icon, reward.message, reward.broadcast, reward.prizes);
                 } else {
                     Tuple<? extends Prize, ?> prize = Config.resolvePrizeType(node).deserializeReference(node, values.subList(0, values.isEmpty() ? 0 : values.size() - 1));
-                    reward = new Reward("Reward@" + node.getPath(), Optional.empty(), Optional.empty(), Optional.empty(), ImmutableList.of(prize));
+                    reward = new Reward("Reward@" + node.getPath(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), ImmutableList.of(prize));
                 }
                 Config.REWARDS.put(reward.id, reward);
             } else {
@@ -199,7 +217,7 @@ public final class Reward extends Component<BigDecimal> {
                     reward = Config.REWARDS.get(identifier);
                 } else {
                     Tuple<? extends Prize, ?> prize = Config.resolvePrizeType(node).deserializeReference(node, values.subList(0, values.isEmpty() ? 0 : values.size() - 1));
-                    reward = new Reward(identifier, Optional.empty(), Optional.empty(), Optional.empty(), ImmutableList.of(prize));
+                    reward = new Reward(identifier, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), ImmutableList.of(prize));
                     Config.REWARDS.put(reward.id, reward);
                 }
             }
