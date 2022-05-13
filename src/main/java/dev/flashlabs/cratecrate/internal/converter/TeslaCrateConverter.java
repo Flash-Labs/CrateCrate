@@ -12,6 +12,8 @@ import org.spongepowered.api.Sponge;
 import org.spongepowered.api.service.economy.EconomyService;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -37,16 +39,20 @@ public final class TeslaCrateConverter {
         try {
             ConfigurationNode from = HoconConfigurationLoader.builder().setPath(CONFIG.resolve("teslacrate/configuration/" + file)).build().load();
             Node to = Node.root();
-            from.getChildrenMap().values().forEach(f -> {
-                Node t = to.get(String.valueOf(f.getKey()));
-                converter.accept(f, t);
-                components.put(String.valueOf(f.getKey()), t);
-                t.get("quantity").detach();
-                t.get("item.quantity").detach();
-                t.get("amount").detach();
-                t.get("weight").detach();
-            });
-            Files.write(CONFIG.resolve("cratecrate/config/" + file), Storm.reserialize(to).getBytes());
+            from.getChildrenMap().values().stream()
+                .sorted((o1, o2) -> String.valueOf(o1.getKey()).compareToIgnoreCase(String.valueOf(o2.getKey())))
+                .forEach(f -> {
+                    Node t = to.get(String.valueOf(f.getKey()));
+                    converter.accept(f, t);
+                    components.put(String.valueOf(f.getKey()), t);
+                    t.get("quantity").detach();
+                    t.get("item.quantity").detach();
+                    t.get("amount").detach();
+                    t.get("weight").detach();
+                });
+            StringWriter writer = new StringWriter();
+            new ComponentConfigGenerator(new PrintWriter(writer)).generate(to);
+            Files.write(CONFIG.resolve("cratecrate/config/" + file), writer.toString().getBytes());
         } catch (IOException e) {
             CrateCrate.get().getLogger().error("Error converting the config file " + file + ".", e);
             throw e;
@@ -77,14 +83,16 @@ public final class TeslaCrateConverter {
         to.set("message", from.getNode("message").getString(""), Storm.STRING.optional("").convertDef(true));
         to.set("broadcast", from.getNode("announcement").getString(""), Storm.STRING.optional("").convertDef(true));
         //TODO: opener, effects
-        from.getNode("keys").getChildrenMap().values().forEach(n -> {
-            int index = to.get("keys").getType() == Node.Type.ARRAY ? to.get("keys").getList().size() : 0;
-            convertKeyReference(n, to.resolve("keys", index));
-        });
+        from.getNode("keys").getChildrenMap().values().stream()
+            .sorted((o1, o2) -> String.valueOf(o1.getKey()).compareToIgnoreCase(String.valueOf(o2.getKey())))
+            .forEach(n -> {
+                int index = to.get("keys").getType() == Node.Type.ARRAY ? to.get("keys").getList().size() : 0;
+                convertKeyReference(n, to.resolve("keys", index));
+            });
         to.set("rewards", ImmutableList.of(), Storm.LIST);
-        from.getNode("rewards").getChildrenMap().values().forEach(n -> {
-            convertRewardReference(n, to.resolve("rewards", to.get("rewards").getList().size()));
-        });
+        from.getNode("rewards").getChildrenMap().values().stream()
+            .sorted((o1, o2) -> String.valueOf(o1.getKey()).compareToIgnoreCase(String.valueOf(o2.getKey())))
+            .forEach(n -> convertRewardReference(n, to.resolve("rewards", to.get("rewards").getList().size())));
     }
 
     public static void convertRewardComponent(ConfigurationNode from, Node to) {
@@ -94,9 +102,9 @@ public final class TeslaCrateConverter {
         }
         //TODO: limit
         to.set("prizes", ImmutableList.of(), Storm.LIST);
-        from.getNode("prizes").getChildrenMap().values().forEach(n -> {
-            convertPrizeReference(n, to.resolve("prizes", to.get("prizes").getList().size()));
-        });
+        from.getNode("prizes").getChildrenMap().values().stream()
+            .sorted((o1, o2) -> String.valueOf(o1.getKey()).compareToIgnoreCase(String.valueOf(o2.getKey())))
+            .forEach(n -> convertPrizeReference(n, to.resolve("prizes", to.get("prizes").getList().size())));
         to.set("weight", from.getNode("weight").getDouble(0.0), Storm.DOUBLE);
     }
 
@@ -195,11 +203,13 @@ public final class TeslaCrateConverter {
                 int index = to.get("lore").getType() == Node.Type.ARRAY ? to.get("lore").getList().size() : 0;
                 to.resolve("lore", index).set(n.getString(""), Storm.STRING);
             });
-            from.getNode("enchantments").getChildrenMap().values().forEach(n -> {
-                int index = to.get("enchantments").getType() == Node.Type.ARRAY ? to.get("enchantments").getList().size() : 0;
-                to.resolve("enchantments", index, 0).set(String.valueOf(n.getKey()).replace("-", "_"), Storm.STRING);
-                to.resolve("enchantments", index, 1).set(n.getInt(1), Storm.INTEGER);
-            });
+            from.getNode("enchantments").getChildrenMap().values().stream()
+                .sorted((o1, o2) -> String.valueOf(o1.getKey()).compareToIgnoreCase(String.valueOf(o2.getKey())))
+                .forEach(n -> {
+                    int index = to.get("enchantments").getType() == Node.Type.ARRAY ? to.get("enchantments").getList().size() : 0;
+                    to.resolve("enchantments", index, 0).set(String.valueOf(n.getKey()).replace("-", "_"), Storm.STRING);
+                    to.resolve("enchantments", index, 1).set(n.getInt(1), Storm.INTEGER);
+                });
             //TODO: keys
             moveIfDefined(from.getNode("nbt"), to.get("nbt"));
             to.set("quantity", from.getNode("quantity").getInt(1), Storm.INTEGER.optional(1).convertDef(true));
@@ -223,7 +233,9 @@ public final class TeslaCrateConverter {
         } else if (from.isList()) {
             from.getChildrenList().forEach(n -> move(n, to.resolve(n.getKey())));
         } else if (value instanceof Map) {
-            from.getChildrenMap().values().forEach(n -> move(n, to.resolve(n.getKey())));
+            from.getChildrenMap().values().stream()
+                .sorted((o1, o2) -> String.valueOf(o1.getKey()).compareToIgnoreCase(String.valueOf(o2.getKey())))
+                .forEach(n -> move(n, to.resolve(n.getKey())));
         } else {
             to.set(value, Storm.ANY_NULLABLE);
         }
