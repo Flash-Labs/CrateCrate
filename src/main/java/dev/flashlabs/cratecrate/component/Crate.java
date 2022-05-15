@@ -1,8 +1,10 @@
 package dev.flashlabs.cratecrate.component;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import dev.flashlabs.cratecrate.CrateCrate;
+import dev.flashlabs.cratecrate.component.effect.Effect;
 import dev.flashlabs.cratecrate.component.key.Key;
 import dev.flashlabs.cratecrate.internal.Config;
 import dev.flashlabs.cratecrate.internal.Serializers;
@@ -25,10 +27,7 @@ import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 
 import java.math.BigDecimal;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Random;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public final class Crate extends Component<Void> {
@@ -44,6 +43,7 @@ public final class Crate extends Component<Void> {
     private final Optional<String> message;
     private final Optional<String> broadcast;
     private final ImmutableList<Tuple<? extends Key, Integer>> keys;
+    private final ImmutableMap<Effect.Action, ImmutableList<Tuple<? extends Effect, ?>>> effects;
     private final ImmutableList<Tuple<Reward, BigDecimal>> rewards;
 
     private Crate(
@@ -54,6 +54,7 @@ public final class Crate extends Component<Void> {
         Optional<String> message,
         Optional<String> broadcast,
         ImmutableList<Tuple<? extends Key, Integer>> keys,
+        ImmutableMap<Effect.Action, ImmutableList<Tuple<? extends Effect, ?>>> effects,
         ImmutableList<Tuple<Reward, BigDecimal>> rewards
     ) {
         super(id);
@@ -63,6 +64,7 @@ public final class Crate extends Component<Void> {
         this.message = message;
         this.broadcast = broadcast;
         this.keys = keys;
+        this.effects = effects;
         this.rewards = rewards;
     }
 
@@ -116,11 +118,16 @@ public final class Crate extends Component<Void> {
         return keys;
     }
 
+    public ImmutableMap<Effect.Action, ImmutableList<Tuple<? extends Effect, ?>>> effects() {
+        return effects;
+    }
+
     public ImmutableList<Tuple<Reward, BigDecimal>> rewards() {
         return rewards;
     }
 
     public boolean open(Player player, Location<World> location) {
+        effects.get(Effect.Action.OPEN).forEach(e -> e.getFirst().give(player, location, e.getSecond()));
         return give(player, roll(player), location);
     }
 
@@ -156,6 +163,7 @@ public final class Crate extends Component<Void> {
                 "crate", name(Optional.empty()),
                 "reward", reward.getFirst().name(Optional.of(reward.getSecond()))
             )));
+        effects.get(Effect.Action.GIVE).forEach(e -> e.getFirst().give(player, location, e.getSecond()));
         return reward.getFirst().give(player);
     }
 
@@ -198,6 +206,15 @@ public final class Crate extends Component<Void> {
                     return Config.resolveKeyType(component).deserializeReference(component, values);
                 })
                 .collect(ImmutableList.toImmutableList());
+            ImmutableMap<Effect.Action, ImmutableList<Tuple<? extends Effect, ?>>> effects = Arrays.stream(Effect.Action.values())
+                .collect(ImmutableMap.toImmutableMap(a -> a, a -> node.resolve("effects", a.name().toLowerCase())
+                    .get(Storm.LIST.of(n -> n).optional(ImmutableList.of())).stream()
+                    .map(n -> {
+                        Node component = n.getType() == Node.Type.ARRAY ? n.resolve(0) : n;
+                        List<Node> values = n.getType() == Node.Type.ARRAY ? n.getList().subList(1, n.getList().size()) : ImmutableList.of();
+                        return Config.resolveEffectType(component).deserializeReference(component, values);
+                    })
+                    .collect(ImmutableList.toImmutableList())));
             ImmutableList<Tuple<Reward, BigDecimal>> rewards = node.get("rewards", Storm.LIST.of(n -> n).optional(ImmutableList.of())).stream()
                 .map(n -> {
                     Node component = n.getType() == Node.Type.ARRAY ? n.resolve(0) : n;
@@ -205,7 +222,7 @@ public final class Crate extends Component<Void> {
                     return Config.resolveRewardType(component).deserializeReference(component, values);
                 })
                 .collect(ImmutableList.toImmutableList());
-            return new Crate(String.valueOf(node.getKey()), name, lore, icon, message, broadcast, ImmutableList.copyOf(keys), ImmutableList.copyOf(rewards));
+            return new Crate(String.valueOf(node.getKey()), name, lore, icon, message, broadcast, keys, effects, rewards);
         }
 
         @Override

@@ -2,6 +2,7 @@ package dev.flashlabs.cratecrate.internal;
 
 import dev.flashlabs.cratecrate.CrateCrate;
 import dev.flashlabs.cratecrate.component.Crate;
+import dev.flashlabs.cratecrate.component.effect.Effect;
 import org.spongepowered.api.data.type.HandTypes;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
@@ -23,8 +24,10 @@ public final class Listeners {
                 CrateCrate.get().sendMessage(player, "interact.crates.preview.no-permission",
                     "crate", t.getFirst().name(Optional.empty())
                 );
+                t.getFirst().effects().get(Effect.Action.REJECT).forEach(e -> e.getFirst().give(player, t.getSecond(), e.getSecond()));
             } else {
                 Utils.preview(t.getFirst(), Inventory.CLOSE).open(player);
+                t.getFirst().effects().get(Effect.Action.PREVIEW).forEach(e -> e.getFirst().give(player, t.getSecond(), e.getSecond()));
             }
         });
     }
@@ -34,6 +37,8 @@ public final class Listeners {
         event.getTargetBlock().getLocation().flatMap(l -> preInteract(event, player, l)).ifPresent(t -> {
             if (Utils.checkKeys(player, t.getFirst())) {
                 Utils.confirm(t).open(player);
+            } else {
+                t.getFirst().effects().get(Effect.Action.REJECT).forEach(e -> e.getFirst().give(player, t.getSecond(), e.getSecond()));
             }
         });
     }
@@ -47,6 +52,7 @@ public final class Listeners {
                 CrateCrate.get().sendMessage(player, "interact.crates.no-permission",
                     "crate", o.get().name(Optional.empty())
                 );
+                o.get().effects().get(Effect.Action.REJECT).forEach(e -> e.getFirst().give(player, location, e.getSecond()));
             } else {
                 return o
                     .filter(c -> event.getHandType() == HandTypes.MAIN_HAND)

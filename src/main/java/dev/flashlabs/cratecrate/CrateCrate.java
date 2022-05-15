@@ -4,6 +4,10 @@ import com.google.inject.Inject;
 import dev.flashlabs.cratecrate.command.Base;
 import dev.flashlabs.cratecrate.component.Crate;
 import dev.flashlabs.cratecrate.component.Reward;
+import dev.flashlabs.cratecrate.component.effect.Effect;
+import dev.flashlabs.cratecrate.component.effect.FireworkEffect;
+import dev.flashlabs.cratecrate.component.effect.PotionEffect;
+import dev.flashlabs.cratecrate.component.effect.SoundEffect;
 import dev.flashlabs.cratecrate.component.key.Key;
 import dev.flashlabs.cratecrate.component.key.StandardKey;
 import dev.flashlabs.cratecrate.component.prize.CommandPrize;
@@ -48,6 +52,12 @@ public final class CrateCrate extends PluginInstance {
         Prize.TYPES.put(MoneyPrize.class.getName(), MoneyPrize.TYPE);
         Key.TYPES.put(StandardKey.TYPE.name(), StandardKey.TYPE);
         Key.TYPES.put(StandardKey.class.getName(), StandardKey.TYPE);
+        Effect.TYPES.put(FireworkEffect.TYPE.name(), FireworkEffect.TYPE);
+        Effect.TYPES.put(FireworkEffect.class.getName(), FireworkEffect.TYPE);
+        Effect.TYPES.put(PotionEffect.TYPE.name(), PotionEffect.TYPE);
+        Effect.TYPES.put(PotionEffect.class.getName(), PotionEffect.TYPE);
+        Effect.TYPES.put(SoundEffect.TYPE.name(), SoundEffect.TYPE);
+        Effect.TYPES.put(SoundEffect.class.getName(), SoundEffect.TYPE);
         Sponge.getEventManager().registerListeners(container, new Listeners());
         commands.register(Base.class);
     }

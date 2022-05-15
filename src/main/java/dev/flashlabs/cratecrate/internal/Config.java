@@ -5,6 +5,7 @@ import dev.flashlabs.cratecrate.component.Component;
 import dev.flashlabs.cratecrate.component.Crate;
 import dev.flashlabs.cratecrate.component.Reward;
 import dev.flashlabs.cratecrate.component.Type;
+import dev.flashlabs.cratecrate.component.effect.Effect;
 import dev.flashlabs.cratecrate.component.key.Key;
 import dev.flashlabs.cratecrate.component.prize.Prize;
 import dev.flashlabs.cratecrate.internal.converter.TeslaCrateConverter;
@@ -28,6 +29,7 @@ public final class Config {
     public static final Map<String, Reward> REWARDS = new HashMap<>();
     public static final Map<String, Prize> PRIZES = new HashMap<>();
     public static final Map<String, Key> KEYS = new HashMap<>();
+    public static final Map<String, Effect> EFFECTS = new HashMap<>();
 
     private static final Path DIRECTORY = Sponge.getConfigManager()
         .getPluginConfig(CrateCrate.get().getContainer())
@@ -49,6 +51,7 @@ public final class Config {
                     throw e;
                 }
             }
+            Node effects = loadComponents("config/effects.conf", Config::resolveEffectType, EFFECTS);
             Node keys = loadComponents("config/keys.conf", Config::resolveKeyType, KEYS);
             Node prizes = loadComponents("config/prizes.conf", Config::resolvePrizeType, PRIZES);
             Node rewards = loadComponents("config/rewards.conf", Config::resolveRewardType, REWARDS);
@@ -110,6 +113,10 @@ public final class Config {
 
     public static Type<? extends Key, Integer> resolveKeyType(Node node) throws SerializationException {
         return (Type<? extends Key, Integer>) Config.<Key>resolveType(node, Key.TYPES, KEYS);
+    }
+
+    public static Type<? extends Effect, ?> resolveEffectType(Node node) throws SerializationException {
+        return Config.<Effect>resolveType(node, Effect.TYPES, EFFECTS);
     }
 
     private static <T extends Component> Type<? extends T, ?> resolveType(

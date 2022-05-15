@@ -10,6 +10,8 @@ import org.spongepowered.api.CatalogType;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.data.DataQuery;
 import org.spongepowered.api.data.key.Keys;
+import org.spongepowered.api.effect.potion.PotionEffect;
+import org.spongepowered.api.effect.potion.PotionEffectType;
 import org.spongepowered.api.item.ItemType;
 import org.spongepowered.api.item.enchantment.Enchantment;
 import org.spongepowered.api.item.enchantment.EnchantmentType;
@@ -160,6 +162,32 @@ public final class Serializers {
             if (value.getQuantity() != 1) {
                 node.set("quantity", value.getQuantity(), Storm.INTEGER);
             }
+        }
+
+    };
+
+    public static final Serializer<PotionEffect> POTION_TYPE = new Serializer<PotionEffect>() {
+
+        @Override
+        public PotionEffect deserialize(Node node) throws SerializationException {
+            String[] split = node.get(Storm.STRING).split("/");
+            PotionEffect.Builder builder = PotionEffect.builder()
+                .potionType(Sponge.getRegistry().getType(PotionEffectType.class, split[0].contains(":") ? split[0] : "minecraft:" + split[0])
+                    .orElseThrow(() -> new SerializationException(node, "Unknown potion type.")));
+            if (split.length == 2) {
+                try {
+                    builder.amplifier(Integer.parseInt(split[1]) - 1);
+                } catch (ArithmeticException e) {
+                    throw new SerializationException(node, "Invalid potion amplifier.");
+                }
+            }
+            return builder.duration(1).build();
+        }
+
+        @Override
+        public void reserialize(Node node, PotionEffect value) throws SerializationException {
+            String id = value.getType().getId();
+            node.set(value.getAmplifier() != 0 ? id + "/" + (value.getAmplifier() + 1) : id, Storm.STRING);
         }
 
     };
