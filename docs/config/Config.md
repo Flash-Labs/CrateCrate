@@ -6,6 +6,7 @@ for individual components.
 
  - `cratecrate.conf`: The main plugin config (currently unused)
  - [`config/crates.conf`](Crates.md)
+ - [`config/effects.conf`](Effects.md)
  - [`config/keys.conf`](Keys.md)
  - [`config/prizes.conf`](Prizes.md)
  - [`config/rewards.conf`](Rewards.md)

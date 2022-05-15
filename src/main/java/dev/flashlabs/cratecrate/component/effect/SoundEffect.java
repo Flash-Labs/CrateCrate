@@ -41,16 +41,26 @@ public final class SoundEffect extends Effect.Locatable {
         this.pitch = pitch;
     }
 
+    /**
+     * Returns the name of this effect, which is the name of the type.
+     */
     @Override
     public Text name(Optional<Tuple<Target, Vector3d>> value) {
         return Text.of(type.getName());
     }
 
+    /**
+     * Returns the lore of this effect, which is always empty.
+     */
     @Override
     public List<Text> lore(Optional<Tuple<Target, Vector3d>> value) {
         return ImmutableList.of();
     }
 
+    /**
+     * Returns the icon of this effect, which is a record_13 item with this
+     * effect's name/lore.
+     */
     @Override
     public ItemStack icon(Optional<Tuple<Target, Vector3d>> value) {
         return ItemStack.builder()
@@ -77,6 +87,10 @@ public final class SoundEffect extends Effect.Locatable {
             super("Sound", CrateCrate.get().getContainer());
         }
 
+        /**
+         * Matches nodes having a {@code sound} child or identifying a sound
+         * type.
+         */
         @Override
         public boolean matches(Node node) {
             if (node.get("sound").getType() == Node.Type.UNDEFINED) {
@@ -89,6 +103,17 @@ public final class SoundEffect extends Effect.Locatable {
             return true;
         }
 
+        /**
+         * Deserializes a sound effect, defined as:
+         *
+         * <pre>{@code
+         * SoundEffect:
+         *     sound: String (SoundType) | Object
+         *         type: String (SoundType)
+         *         volume: Optional<Double>
+         *         pitch: Optional<Double>
+         * }</pre>
+         */
         @Override
         public SoundEffect deserializeComponent(Node node) throws SerializationException {
             SoundType type = node.get("sound").getType() == Node.Type.STRING
@@ -104,6 +129,17 @@ public final class SoundEffect extends Effect.Locatable {
             throw new UnsupportedOperationException(); //TODO
         }
 
+        /**
+         * Deserializes a sound effect reference, defined as:
+         *
+         * <pre>{@code
+         * SoundEffectReference:
+         *     node:
+         *        SoundEffect |
+         *        String (SoundEffect id or SoundType)
+         *     values: Effect.Locatable reference value
+         * }</pre>
+         */
         @Override
         public Tuple<SoundEffect, Tuple<Target, Vector3d>> deserializeReference(Node node, List<? extends Node> values) throws SerializationException {
             SoundEffect effect;

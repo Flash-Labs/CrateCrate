@@ -50,12 +50,31 @@ public abstract class Effect<T> extends Component<T> {
 
         public abstract boolean give(Location<World> location);
 
+        /**
+         * Deserializes a locatable effect reference value, defined as:
+         *
+         * <pre>{@code
+         * LocatableEffectReferenceValue:
+         *     node: String | Object
+         *        target: Optional<Target> (defaults to "location")
+         *        offset: Vector3d (defaults to zero)
+         *     values:
+         *        [] |
+         *        [Target] |
+         *        [Double, Double, Double] |
+         *        [Target, Double, Double, Double]
+         * }</pre>
+         */
         protected static Tuple<Target, Vector3d> deserializeReferenceValue(Node node, List<? extends Node> values) {
             Target target = Target.LOCATION;
             Vector3d offset = Vector3d.ZERO;
             if (node.getType() == Node.Type.OBJECT) {
                 target = node.get("target", Storm.ENUM.of(Target.class).optional(Target.LOCATION));
-                offset = Vector3d.from(node.resolve("offset", 0).get(Storm.DOUBLE), node.resolve("offset", 1).get(Storm.DOUBLE), node.resolve("offset", 2).get(Storm.DOUBLE));
+                offset = Vector3d.from(
+                    node.resolve("offset", 0).get(Storm.DOUBLE.optional(0.0)),
+                    node.resolve("offset", 1).get(Storm.DOUBLE.optional(0.0)),
+                    node.resolve("offset", 2).get(Storm.DOUBLE.optional(0.0))
+                );
             } else if (values.size() == 1) {
                 target = values.get(0).get(Storm.ENUM.of(Target.class));
             } else if (values.size() == 3) {

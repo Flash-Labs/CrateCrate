@@ -61,20 +61,31 @@ public final class FireworkEffect extends Effect.Locatable {
         this.duration = duration;
     }
 
+    /**
+     * Returns the name of this effect, which is {@code Firework (<shape>)} with
+     * the shape being {@code Random} if undefined.
+     */
     @Override
     public Text name(Optional<Tuple<Target, Vector3d>> value) {
         return Text.of("Firework (", shape.map(CatalogType::getName).orElse("Random"), ")");
     }
 
+    /**
+     * Returns the lore of this effect, which is always empty.
+     */
     @Override
     public List<Text> lore(Optional<Tuple<Target, Vector3d>> value) {
         return ImmutableList.of();
     }
 
+    /**
+     * Returns the icon of this effect, which is a fireworks item with this
+     * effect's name/lore.
+     */
     @Override
     public ItemStack icon(Optional<Tuple<Target, Vector3d>> value) {
         return ItemStack.builder()
-            .itemType(ItemTypes.RECORD_13)
+            .itemType(ItemTypes.FIREWORKS)
             .add(Keys.DISPLAY_NAME, name(value))
             .add(Keys.ITEM_LORE, lore(value))
             .build();
@@ -110,12 +121,30 @@ public final class FireworkEffect extends Effect.Locatable {
             super("Firework", CrateCrate.get().getContainer());
         }
 
+        /**
+         * Matches nodes having a {@code firework} child or a string value
+         * starting with {@code firework}.
+         */
         @Override
         public boolean matches(Node node) {
             return node.get("firework").getType() != Node.Type.UNDEFINED
                 || node.getType() == Node.Type.STRING && node.get(Storm.STRING).startsWith("firework");
         }
 
+        /**
+         * Deserializes a firework effect, defined as:
+         *
+         * <pre>{@code
+         * FireworkEffect:
+         *     firework: String (FireworkShape id) | Object
+         *         shape: String (FireworkShape id)
+         *         colors: Optional<List<Integer>>
+         *         fades: Optional<List<Integer>>
+         *         trail: Optional<Boolean>
+         *         flicker: Optional<Boolean>
+         *         duration: Optional<Integer>
+         * }</pre>
+         */
         @Override
         public FireworkEffect deserializeComponent(Node node) throws SerializationException {
             Optional<FireworkShape> shape = node.get("firework").getType() == Node.Type.STRING
@@ -136,6 +165,17 @@ public final class FireworkEffect extends Effect.Locatable {
             throw new UnsupportedOperationException(); //TODO
         }
 
+        /**
+         * Deserializes a firework effect reference, defined as:
+         *
+         * <pre>{@code
+         * FireworkEffectReference:
+         *     node:
+         *        FireworkEffect |
+         *        String (FireworkEffect id or prefixed with "firework")
+         *     values: Effect.Locatable reference value
+         * }</pre>
+         */
         @Override
         public Tuple<FireworkEffect, Tuple<Target, Vector3d>> deserializeReference(Node node, List<? extends Node> values) throws SerializationException {
             FireworkEffect effect;

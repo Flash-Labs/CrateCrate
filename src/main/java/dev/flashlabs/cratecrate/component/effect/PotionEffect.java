@@ -46,6 +46,11 @@ public final class PotionEffect extends Effect<Integer> {
         this.particles = particles;
     }
 
+    /**
+     * Returns the name of this effect, which is the translation of the potion
+     * type followed by the strength of the potion if it has an amplifier of at
+     * least {@code 1} (using roman numerals up to V).
+     */
     @Override
     public Text name(Optional<Integer> value) {
         Text level;
@@ -60,6 +65,10 @@ public final class PotionEffect extends Effect<Integer> {
         return Text.of(type.getPotionTranslation(), level);
     }
 
+    /**
+     * Returns the lore of this effect, which is either an empty list or the
+     * HH:mm:ss formatted duration if a reference value is given.
+     */
     @Override
     public List<Text> lore(Optional<Integer> value) {
         return value
@@ -67,6 +76,10 @@ public final class PotionEffect extends Effect<Integer> {
             .orElse(ImmutableList.of());
     }
 
+    /**
+     * Returns the icon of this effect, which is a splash potion with this
+     * effect's name/lore.
+     */
     @Override
     public ItemStack icon(Optional<Integer> value) {
         return ItemStack.builder()
@@ -95,6 +108,10 @@ public final class PotionEffect extends Effect<Integer> {
             super("Potion", CrateCrate.get().getContainer());
         }
 
+        /**
+         * Matches nodes having a {@code potion} child or identifying a potion
+         * type.
+         */
         @Override
         public boolean matches(Node node) {
             if (node.get("potion").getType() == Node.Type.UNDEFINED) {
@@ -107,6 +124,17 @@ public final class PotionEffect extends Effect<Integer> {
             return true;
         }
 
+        /**
+         * Deserializes a potion effect, defined as:
+         *
+         * <pre>{@code
+         * FireworkEffect:
+         *     potion: String (PotionType) | Object
+         *         type: String (PotionType)
+         *         ambient: Optional<Boolean>
+         *         particles: Optional<Boolean>
+         * }</pre>
+         */
         @Override
         public PotionEffect deserializeComponent(Node node) throws SerializationException {
             org.spongepowered.api.effect.potion.PotionEffect base = node.get("potion").getType() == Node.Type.STRING
@@ -122,6 +150,19 @@ public final class PotionEffect extends Effect<Integer> {
             throw new UnsupportedOperationException(); //TODO
         }
 
+        /**
+         * Deserializes a potion effect reference, defined as:
+         *
+         * <pre>{@code
+         * PotionEffectReference:
+         *     node:
+         *        PotionEffect |
+         *        String (PotionType)
+         *     values: [
+         *        Integer
+         *     ]
+         * }</pre>
+         */
         @Override
         public Tuple<PotionEffect, Integer> deserializeReference(Node node, List<? extends Node> values) throws SerializationException {
             PotionEffect effect;
