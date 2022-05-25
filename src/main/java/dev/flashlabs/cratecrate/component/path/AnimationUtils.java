@@ -1,13 +1,13 @@
 package dev.flashlabs.cratecrate.component.path;
 
-public final class AnimationUtils {
+import com.flowpowered.math.TrigMath;
 
-    public static double TAU = 2 * Math.PI;
+public final class AnimationUtils {
 
     public static double[] shift(double radians, int segments) {
         double[] shifts = new double[segments];
         for (int i = 0; i < segments; i++) {
-            shifts[i] = radians + i * (TAU / segments);
+            shifts[i] = radians + i * (TrigMath.TWO_PI / segments);
         }
         return shifts;
     }

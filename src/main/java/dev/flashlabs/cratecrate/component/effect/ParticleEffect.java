@@ -5,8 +5,6 @@ import com.flowpowered.math.vector.Vector3d;
 import com.google.common.collect.ImmutableList;
 import dev.flashlabs.cratecrate.CrateCrate;
 import dev.flashlabs.cratecrate.component.Type;
-import dev.flashlabs.cratecrate.component.path.AnimationUtils;
-import dev.flashlabs.cratecrate.component.path.CirclePath;
 import dev.flashlabs.cratecrate.component.path.Path;
 import dev.flashlabs.cratecrate.internal.Config;
 import dev.flashlabs.cratecrate.internal.Serializers;
@@ -84,7 +82,7 @@ public final class ParticleEffect extends Effect.Locatable {
             .execute(new Runnable() {
 
                 private double radians = path.shift();
-                private final double increment = path.speed() * (AnimationUtils.TAU / path.precision());
+                private final double increment = path.speed() * (TrigMath.TWO_PI / path.precision());
                 private final org.spongepowered.api.effect.particle.ParticleEffect.Builder builder = org.spongepowered.api.effect.particle.ParticleEffect.builder().type(type);
 
                 @Override
@@ -144,7 +142,7 @@ public final class ParticleEffect extends Effect.Locatable {
                 ? node.get("particle", Serializers.CATALOG_TYPE.of(ParticleType.class))
                 : node.get("particle.type", Serializers.CATALOG_TYPE.of(ParticleType.class));
             Optional<Color> color = node.get("particle.color", Storm.INTEGER.optional()).map(Color::ofRgb);
-            Path path = CirclePath.deserialize(node.get("path"));
+            Path path = Path.deserialize(node.get("path"));
             return new ParticleEffect(String.valueOf(node.getKey()), type, color, path);
         }
 
