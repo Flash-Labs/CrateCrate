@@ -78,7 +78,16 @@ public final class ParticleEffect extends Effect.Locatable {
 
     @Override
     public boolean give(Location<World> location) {
-        Task task = Task.builder()
+        Task task = start(location);
+        Task.builder()
+            .execute(task::cancel)
+            .delay((long) path.interval() * path.precision(), TimeUnit.MILLISECONDS)
+            .submit(CrateCrate.get().getContainer());
+        return true;
+    }
+
+    public Task start(Location<World> location) {
+        return Task.builder()
             .execute(new Runnable() {
 
                 private double radians = path.shift();
@@ -96,7 +105,7 @@ public final class ParticleEffect extends Effect.Locatable {
                     }
                     org.spongepowered.api.effect.particle.ParticleEffect effect = builder.build();
                     for (Vector3d vector : path.positions(radians)) {
-                        location.getExtent().spawnParticles(effect, location.getPosition().add(path.scale().mul(vector)));
+                        location.getExtent().spawnParticles(effect, location.getPosition().add(vector.mul(path.scale())));
                     }
                     radians += increment;
                 }
@@ -104,11 +113,6 @@ public final class ParticleEffect extends Effect.Locatable {
             })
             .interval(path.interval(), TimeUnit.MILLISECONDS)
             .submit(CrateCrate.get().getContainer());
-        Task.builder()
-            .execute(task::cancel)
-            .delay(10000, TimeUnit.MILLISECONDS)
-            .submit(CrateCrate.get().getContainer());
-        return true;
     }
 
     private static final class ParticleEffectType extends Type<ParticleEffect, Tuple<Target, Vector3d>> {

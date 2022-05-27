@@ -48,15 +48,15 @@ public final class Listeners {
             event.setCancelled(true);
             if (!o.isPresent()) {
                 CrateCrate.get().sendMessage(player, "interact.crates.unavailable");
-            } else if (!player.hasPermission("cratecrate.crates." + o.get().id() + ".base")) {
+            } else if (!player.hasPermission("cratecrate.crates." + o.get().crate().id() + ".base")) {
                 CrateCrate.get().sendMessage(player, "interact.crates.no-permission",
-                    "crate", o.get().name(Optional.empty())
+                    "crate", o.get().crate().name(Optional.empty())
                 );
-                o.get().effects().get(Effect.Action.REJECT).forEach(e -> e.getFirst().give(player, location, e.getSecond()));
+                o.get().crate().effects().get(Effect.Action.REJECT).forEach(e -> e.getFirst().give(player, location, e.getSecond()));
             } else {
                 return o
-                    .filter(c -> event.getHandType() == HandTypes.MAIN_HAND)
-                    .map(c -> Tuple.of(c, location.add(0.5, 0.5, 0.5)));
+                    .filter(r -> event.getHandType() == HandTypes.MAIN_HAND)
+                    .map(r -> Tuple.of(r.crate(), location.add(0.5, 0.5, 0.5)));
             }
             return Optional.empty();
         });

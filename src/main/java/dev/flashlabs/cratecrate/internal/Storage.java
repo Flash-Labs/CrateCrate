@@ -23,7 +23,7 @@ import java.util.UUID;
 
 public final class Storage {
 
-    public static final Map<Location<World>, Optional<Crate>> LOCATIONS = new HashMap<>();
+    public static final Map<Location<World>, Optional<Registration>> LOCATIONS = new HashMap<>();
 
     private static final Path DIRECTORY = Sponge.getConfigManager()
         .getPluginConfig(CrateCrate.get().getContainer())
@@ -32,6 +32,8 @@ public final class Storage {
     private static DatabaseService DATABASE;
 
     public static void load() {
+        LOCATIONS.values().forEach(o -> o.ifPresent(Registration::stopEffects));
+        LOCATIONS.clear();
         try {
             Files.createDirectories(DIRECTORY);
             DATABASE = DatabaseService.of(Sponge.getServiceManager().provideUnchecked(SqlService.class).getDataSource("jdbc:h2:" + DIRECTORY.resolve("storage.db") + ";MODE=MySQL"));
@@ -61,9 +63,9 @@ public final class Storage {
                     World world = Sponge.getServer().getWorld(UUID.fromString(result.getString(1))).orElse(null);
                     if (world != null) {
                         Location<World> location = world.getLocation(result.getInt(2), result.getInt(3), result.getInt(4));
-                        Crate crate = Config.CRATES.get(result.getString(5));
-                        LOCATIONS.put(location, Optional.ofNullable(crate));
-                        if (crate == null) {
+                        Optional<Registration> registration = Optional.ofNullable(Config.CRATES.get(result.getString(5))).map(c -> new Registration(location, c));
+                        LOCATIONS.put(location, registration);
+                        if (!registration.isPresent()) {
                             CrateCrate.get().getLogger().error("Location is set to unknown crate: " + result.getString(5) + ".");
                         }
                     } else {
@@ -71,6 +73,7 @@ public final class Storage {
                     }
                 }
             }
+            LOCATIONS.values().forEach(o -> o.ifPresent(Registration::startEffects));
         } catch (IOException | SQLException e) {
             CrateCrate.get().getLogger().error("Error loading storage: " + e.getMessage());
             CrateCrate.get().getLogger().error("Storage loading halted early, certain features may or may not be operational.");
@@ -110,7 +113,9 @@ public final class Storage {
             location.getBlockZ(),
             crate.id()
         );
-        LOCATIONS.put(location, Optional.of(crate));
+        Registration registration = new Registration(location, crate);
+        registration.startEffects();
+        LOCATIONS.put(location, Optional.of(registration));
     }
 
     public static void deleteLocation(Location<World> location) throws SQLException {
@@ -122,7 +127,7 @@ public final class Storage {
             location.getBlockY(),
             location.getBlockZ()
         );
-        LOCATIONS.remove(location);
+        Optional.ofNullable(LOCATIONS.remove(location)).ifPresent(o -> o.ifPresent(Registration::stopEffects));
     }
 
 }

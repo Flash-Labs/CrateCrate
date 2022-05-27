@@ -5,6 +5,7 @@ import dev.flashlabs.cratecrate.CrateCrate;
 import dev.flashlabs.cratecrate.command.CommandUtils;
 import dev.flashlabs.cratecrate.component.Component;
 import dev.flashlabs.cratecrate.component.Crate;
+import dev.flashlabs.cratecrate.internal.Registration;
 import dev.flashlabs.cratecrate.internal.Storage;
 import dev.flashlabs.flashlibs.command.Command;
 import org.spongepowered.api.command.CommandException;
@@ -48,7 +49,7 @@ public final class Delete extends Command {
             ));
         }
         //TODO: Get registered crate id from database?
-        Optional<Crate> crate = Storage.LOCATIONS.get(location);
+        Optional<Crate> crate = Storage.LOCATIONS.get(location).map(Registration::crate);
         try {
             Storage.deleteLocation(location);
             CrateCrate.get().sendMessage(src, "command.location.delete.success",

@@ -6,6 +6,7 @@ import dev.flashlabs.cratecrate.command.CommandUtils;
 import dev.flashlabs.cratecrate.component.Component;
 import dev.flashlabs.cratecrate.component.Crate;
 import dev.flashlabs.cratecrate.internal.Config;
+import dev.flashlabs.cratecrate.internal.Registration;
 import dev.flashlabs.cratecrate.internal.Storage;
 import dev.flashlabs.flashlibs.command.Command;
 import org.spongepowered.api.command.CommandException;
@@ -47,7 +48,7 @@ public final class Set extends Command {
         Crate crate = args.requireOne("crate");
         location = new Location<>(location.getExtent(), location.getBlockPosition());
         if (Storage.LOCATIONS.containsKey(location)) {
-            Optional<Crate> registered = Storage.LOCATIONS.get(location);
+            Optional<Crate> registered = Storage.LOCATIONS.get(location).map(Registration::crate);
             throw new CommandException(CrateCrate.get().getMessage("command.location.set.invalid-location", src.getLocale(),
                 "location", location.getExtent().getName() + " " + location.getPosition(),
                 "crate", registered.map(Component::id).orElse("unavailable")
