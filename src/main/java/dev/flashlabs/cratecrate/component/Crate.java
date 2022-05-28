@@ -6,6 +6,7 @@ import com.google.common.collect.Maps;
 import dev.flashlabs.cratecrate.CrateCrate;
 import dev.flashlabs.cratecrate.component.effect.Effect;
 import dev.flashlabs.cratecrate.component.key.Key;
+import dev.flashlabs.cratecrate.component.opener.Opener;
 import dev.flashlabs.cratecrate.internal.Config;
 import dev.flashlabs.cratecrate.internal.Serializers;
 import dev.flashlabs.flashlibs.message.MessageTemplate;
@@ -42,6 +43,7 @@ public final class Crate extends Component<Void> {
     private final Optional<ItemStackSnapshot> icon;
     private final Optional<String> message;
     private final Optional<String> broadcast;
+    private final Optional<Opener> opener;
     private final ImmutableList<Tuple<? extends Key, Integer>> keys;
     private final ImmutableMap<Effect.Action, ImmutableList<Tuple<? extends Effect, ?>>> effects;
     private final ImmutableList<Tuple<Reward, BigDecimal>> rewards;
@@ -53,6 +55,7 @@ public final class Crate extends Component<Void> {
         Optional<ItemStackSnapshot> icon,
         Optional<String> message,
         Optional<String> broadcast,
+        Optional<Opener> opener,
         ImmutableList<Tuple<? extends Key, Integer>> keys,
         ImmutableMap<Effect.Action, ImmutableList<Tuple<? extends Effect, ?>>> effects,
         ImmutableList<Tuple<Reward, BigDecimal>> rewards
@@ -63,6 +66,7 @@ public final class Crate extends Component<Void> {
         this.icon = icon;
         this.message = message;
         this.broadcast = broadcast;
+        this.opener = opener;
         this.keys = keys;
         this.effects = effects;
         this.rewards = rewards;
@@ -128,17 +132,19 @@ public final class Crate extends Component<Void> {
 
     public boolean open(Player player, Location<World> location) {
         effects.get(Effect.Action.OPEN).forEach(e -> e.getFirst().give(player, location, e.getSecond()));
-        return give(player, roll(player), location);
+        return opener
+            .map(o -> o.open(player, this, location))
+            .orElseGet(() -> give(player, roll(player), location));
     }
 
     /**
      * Returns a random reward rolled from this crate. Currently, rewards are
      * not dependent on the player but this is likely to change in the future.
      */
-    public Tuple<? extends Reward, BigDecimal> roll(Player player) {
+    public Tuple<Reward, BigDecimal> roll(Player player) {
         BigDecimal sum = rewards.stream().map(Tuple::getSecond).reduce(BigDecimal.ZERO, BigDecimal::add);
         BigDecimal selection = BigDecimal.valueOf(RANDOM.nextDouble()).multiply(sum);
-        for (Tuple<? extends Reward, BigDecimal> reward : rewards) {
+        for (Tuple<Reward, BigDecimal> reward : rewards) {
             selection = selection.subtract(reward.getSecond());
             if (selection.compareTo(BigDecimal.ZERO) <= 0) {
                 return reward;
@@ -148,7 +154,7 @@ public final class Crate extends Component<Void> {
         throw new AssertionError("No available rewards.");
     }
 
-    public boolean give(Player player, Tuple<? extends Reward, BigDecimal> reward, Location<World> location) {
+    public boolean give(Player player, Tuple<Reward, BigDecimal> reward, Location<World> location) {
         Optional.ofNullable(reward.getFirst().message().orElse(message.orElse(null)))
             .filter(m -> !m.isEmpty() && !message.orElse("x").isEmpty())
             .ifPresent(m -> player.sendMessage(MessageTemplate.of(m).get(
@@ -199,6 +205,9 @@ public final class Crate extends Component<Void> {
             Optional<ItemStackSnapshot> icon = node.get("icon", Serializers.ITEM_STACK.optional()).map(ItemStack::createSnapshot);
             Optional<String> message = node.get("message", Storm.STRING.optional());
             Optional<String> broadcast = node.get("broadcast", Storm.STRING.optional());
+            Optional<Opener> opener = node.get("opener").getType() != Node.Type.UNDEFINED
+                ? Optional.of(Opener.deserialize(node.get("opener")))
+                : Optional.empty();
             ImmutableList<Tuple<? extends Key, Integer>> keys = node.get("keys", Storm.LIST.of(n -> n).optional(ImmutableList.of())).stream()
                 .map(n -> {
                     Node component = n.getType() == Node.Type.ARRAY ? n.resolve(0) : n;
@@ -222,7 +231,7 @@ public final class Crate extends Component<Void> {
                     return Config.resolveRewardType(component).deserializeReference(component, values);
                 })
                 .collect(ImmutableList.toImmutableList());
-            return new Crate(String.valueOf(node.getKey()), name, lore, icon, message, broadcast, keys, effects, rewards);
+            return new Crate(String.valueOf(node.getKey()), name, lore, icon, message, broadcast, opener, keys, effects, rewards);
         }
 
         @Override

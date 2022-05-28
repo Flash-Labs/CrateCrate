@@ -28,7 +28,7 @@ public final class Utils {
             crate.name(Optional.empty()),
             crate.rewards().stream()
                 .map(r -> Element.of(r.getFirst().icon(Optional.of(r.getSecond())), a -> a.callback(v -> {
-                    preview(r, Element.of(r.getFirst().icon(Optional.empty()), a2 -> a2.callback(v2 -> {
+                    preview(r, Element.of(crate.icon(Optional.empty()), a2 -> a2.callback(v2 -> {
                         v.open(a2.getPlayer());
                     }))).open(a.getPlayer());
                 })))
