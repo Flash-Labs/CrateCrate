@@ -1,6 +1,8 @@
 package dev.flashlabs.cratecrate.internal.converter;
 
+import com.flowpowered.math.vector.Vector3d;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import dev.flashlabs.cratecrate.CrateCrate;
@@ -10,6 +12,7 @@ import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.service.economy.EconomyService;
+import org.spongepowered.api.util.Color;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -27,8 +30,10 @@ public final class TeslaCrateConverter {
     private static final Map<String, Node> REWARDS = Maps.newHashMap();
     private static final Map<String, Node> PRIZES = Maps.newHashMap();
     private static final Map<String, Node> KEYS = Maps.newHashMap();
+    private static final Map<String, Node> EFFECTS = Maps.newHashMap();
 
     public static void convert() throws IOException {
+        convertFile("effects.conf", TeslaCrateConverter::convertEffectComponent, EFFECTS);
         convertFile("keys.conf", TeslaCrateConverter::convertKeyComponent, KEYS);
         convertFile("prizes.conf", TeslaCrateConverter::convertPrizeComponent, PRIZES);
         convertFile("rewards.conf", TeslaCrateConverter::convertRewardComponent, REWARDS);
@@ -45,10 +50,7 @@ public final class TeslaCrateConverter {
                     Node t = to.get(String.valueOf(f.getKey()));
                     converter.accept(f, t);
                     components.put(String.valueOf(f.getKey()), t);
-                    t.get("quantity").detach();
-                    t.get("item.quantity").detach();
-                    t.get("amount").detach();
-                    t.get("weight").detach();
+                    ImmutableList.of("target", "offset", "quantity", "item.quantity", "amount", "weight").forEach(k -> t.get(k).detach());
                 });
             StringWriter writer = new StringWriter();
             new ComponentConfigGenerator(new PrintWriter(writer)).generate(to);
@@ -82,13 +84,28 @@ public final class TeslaCrateConverter {
         convertComponent(from, to);
         to.set("message", from.getNode("message").getString(""), Storm.STRING.optional("").convertDef(true));
         to.set("broadcast", from.getNode("announcement").getString(""), Storm.STRING.optional("").convertDef(true));
-        //TODO: opener, effects
+        switch (from.getNode("opener").getString("standard")) {
+            case "instantgui": to.set("opener", "gui", Storm.STRING); break;
+            case "roulettegui": to.set("opener", "roulette", Storm.STRING); break;
+        }
         from.getNode("keys").getChildrenMap().values().stream()
             .sorted((o1, o2) -> String.valueOf(o1.getKey()).compareToIgnoreCase(String.valueOf(o2.getKey())))
             .forEach(n -> {
                 int index = to.get("keys").getType() == Node.Type.ARRAY ? to.get("keys").getList().size() : 0;
                 convertKeyReference(n, to.resolve("keys", index));
             });
+        ImmutableMap.of(
+            "passive", "idle",
+            "on_open", "open",
+            "on_receive", "give",
+            "on_reject", "reject",
+            "on_preview", "preview"
+        ).forEach((f, t) -> from.getNode("effects", f).getChildrenMap().values().stream()
+            .sorted((o1, o2) -> String.valueOf(o1.getKey()).compareToIgnoreCase(String.valueOf(o2.getKey())))
+            .forEach(n -> {
+                int index = to.resolve("effects", t).getType() == Node.Type.ARRAY ? to.resolve("effects", t).getList().size() : 0;
+                convertEffectReference(n, to.resolve("effects", t, index));
+            }));
         to.set("rewards", ImmutableList.of(), Storm.LIST);
         from.getNode("rewards").getChildrenMap().values().stream()
             .sorted((o1, o2) -> String.valueOf(o1.getKey()).compareToIgnoreCase(String.valueOf(o2.getKey())))
@@ -192,6 +209,73 @@ public final class TeslaCrateConverter {
         }
     }
 
+    public static void convertEffectComponent(ConfigurationNode from, Node to) {
+        if (!from.getNode("firework").isVirtual()) {
+            to.set("firework.shape", (from.getNode("firework").isMap() ? from.getNode("firework", "type") : from.getNode("firework")).getString(""), Storm.STRING.optional(""));
+            moveIfDefined(from.getNode("firework", "color"), to.resolve("firework", "colors", 0), TeslaCrateConverter::convertColor);
+            moveIfDefined(from.getNode("firework", "fade"), to.resolve("firework", "fades", 0), TeslaCrateConverter::convertColor);
+            moveIfDefined(from.getNode("firework", "flicker"), to.get("firework.flicker"), (f, t) -> t.set(f.getBoolean(false), Storm.BOOLEAN));
+            moveIfDefined(from.getNode("firework", "trail"), to.get("firework.trail"), (f, t) -> t.set(f.getBoolean(false), Storm.BOOLEAN));
+            moveIfDefined(from.getNode("firework", "strength"), to.get("firework.duration"), (f, t) -> t.set(f.getInt(0), Storm.INTEGER));
+        } else if (!from.getNode("particle").isVirtual()) {
+            to.set("particle.type", (from.getNode("particle").isMap() ? from.getNode("particle", "type") : from.getNode("particle")).getString("minecraft:redstone_dust"), Storm.STRING);
+            moveIfDefined(from.getNode("particle", "color"), to.get("particle.color"), TeslaCrateConverter::convertColor);
+            to.set("path.type", (from.getNode("path").isMap() ? from.getNode("path", "type") : from.getNode("path")).getString(""), Storm.STRING);
+            moveIfDefined(from.getNode("path", "axis"), to.get("path.axis"));
+            to.set("path.interval", from.getNode("path", "interval").getInt(20), Storm.INTEGER.optional(20).convertDef(true));
+            to.set("path.precision", from.getNode("path", "precision").getInt(120), Storm.INTEGER.optional(120).convertDef(true));
+            to.set("path.segments", from.getNode("path", "segments").getInt(1), Storm.INTEGER.optional(1).convertDef(true));
+            to.set("path.shift", from.getNode("path", "shift").getDouble(0.0), Storm.DOUBLE.optional(0.0).convertDef(true));
+            to.set("path.speed", from.getNode("path", "speed").getDouble(1.0), Storm.DOUBLE.optional(1.0).convertDef(true));
+            moveIfDefined(from.getNode("path", "scale"), to.get("path.scale"));
+        } else if (!from.getNode("potion").isVirtual()) {
+            to.set("potion.type", (from.getNode("potion").isMap() ? from.getNode("potion", "type") : from.getNode("potion")).getString(""), Storm.STRING);
+            if (!from.getNode("potion", "amplifier").isVirtual()) {
+                to.set("potion.type", to.get("potion.type", Storm.STRING) + "/" + (from.getNode("potion", "amplifier").getInt(1) - 1), Storm.STRING);
+            }
+            to.set("potion.ambient", from.getNode("potion", "ambient").getBoolean(false), Storm.BOOLEAN.optional(false).convertDef(true));
+            to.set("potion.particles", from.getNode("potion", "particles").getBoolean(true), Storm.BOOLEAN.optional(true).convertDef(true));
+            to.set("duration", from.getNode("potion", "duration").getInt(100), Storm.INTEGER);
+        } else if (!from.getNode("sound").isVirtual()) {
+            to.set("sound.type", (from.getNode("sound").isMap() ? from.getNode("sound", "type") : from.getNode("sound")).getString(""), Storm.STRING);
+            to.set("sound.volume", from.getNode("sound", "volume").getDouble(1.0), Storm.DOUBLE.optional(1.0).convertDef(true));
+            to.set("sound.pitch", from.getNode("sound", "pitch").getDouble(1.0), Storm.DOUBLE.optional(1.0).convertDef(true));
+        } else {
+            //TODO: Unknown types
+        }
+        if (from.getNode("target").getString("location").equalsIgnoreCase("player")) {
+            to.set("target", "player", Storm.STRING);
+        }
+        moveIfDefined(from.getNode("offset"), to.get("offset"));
+    }
+
+    public static void convertEffectReference(ConfigurationNode from, Node to) {
+        if (from.isMap()) {
+            convertEffectComponent(from, to);
+        } else {
+            String id = String.valueOf(from.getKey()).split("/")[0];
+            Node effect = EFFECTS.getOrDefault(id, Node.root());
+            to.resolve(0).set(id, Storm.STRING);
+            if (effect.get("potion").getType() != Node.Type.UNDEFINED) {
+                to.resolve(1).set(from.getInt(effect.get("duration", Storm.INTEGER.optional(1))), Storm.INTEGER);
+            } else {
+                if (effect.get("target").getType() != Node.Type.UNDEFINED) {
+                    to.resolve(1).set(effect.get("target", Storm.STRING), Storm.STRING);
+                }
+                Vector3d offset = Vector3d.from(
+                    from.getNode(0).getDouble(effect.resolve("offset", 0).get(Storm.DOUBLE.optional(0.0))),
+                    from.getNode(1).getDouble(effect.resolve("offset", 1).get(Storm.DOUBLE.optional(0.0))),
+                    from.getNode(2).getDouble(effect.resolve("offset", 2).get(Storm.DOUBLE.optional(0.0)))
+                );
+                if (!offset.equals(Vector3d.ZERO)) {
+                    to.resolve(to.getList().size()).set(offset.getX(), Storm.DOUBLE);
+                    to.resolve(to.getList().size()).set(offset.getY(), Storm.DOUBLE);
+                    to.resolve(to.getList().size()).set(offset.getZ(), Storm.DOUBLE);
+                }
+            }
+        }
+    }
+
     private static void convertItem(ConfigurationNode from, Node to) {
         if (from.isMap()) {
             to.set("type", from.getNode("type").getString(""), Storm.STRING);
@@ -218,9 +302,25 @@ public final class TeslaCrateConverter {
         }
     }
 
+    private static void convertColor(ConfigurationNode from, Node to) {
+        if (from.isList()) {
+            to.set(Color.ofRgb(from.getNode(0).getInt(0), from.getNode(1).getInt(0), from.getNode(2).getInt(0)).getRgb(), Storm.INTEGER);
+        } else {
+            try {
+                to.set(Integer.decode(from.getString("")), Storm.INTEGER);
+            } catch (NumberFormatException e) {
+                to.set(0, Storm.INTEGER);
+            }
+        }
+    }
+
     private static void moveIfDefined(ConfigurationNode from, Node to) {
+        moveIfDefined(from, to, TeslaCrateConverter::move);
+    }
+
+    private static void moveIfDefined(ConfigurationNode from, Node to, BiConsumer<ConfigurationNode, Node> converter) {
         if (!from.isVirtual()) {
-            move(from, to);
+            converter.accept(from, to);
         }
     }
 
