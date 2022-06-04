@@ -1,6 +1,7 @@
 package dev.flashlabs.cratecrate.command;
 
 import dev.flashlabs.cratecrate.command.crate.Crate;
+import dev.flashlabs.cratecrate.command.effect.Effect;
 import dev.flashlabs.cratecrate.command.key.Key;
 import dev.flashlabs.cratecrate.command.location.Location;
 import dev.flashlabs.cratecrate.command.prize.Prize;
@@ -16,19 +17,19 @@ public final class Base extends Command {
     public static final Text USAGE = CommandUtils.usage(
         "/crate ",
         "The base command for CrateCrate.",
-        CommandUtils.argument("subcommand ...", false, "A subcommand (crate/key/location/prize/reward) and arguments.")
+        CommandUtils.argument("subcommand ...", false, "A subcommand (crate/effect/key/location/prize/reward) and arguments.")
     );
 
     private Base(Builder builder) {
         super(builder
             .aliases("/cratecrate", "/crate")
             .permission("cratecrate.command.base")
-            .children(Crate.class, Reward.class, Prize.class, Key.class, Location.class)
+            .children(Crate.class, Effect.class, Reward.class, Prize.class, Key.class, Location.class)
         );
     }
 
     public CommandResult execute(CommandSource src, CommandContext args) {
-        CommandUtils.paginate(src, USAGE, Crate.USAGE, Key.USAGE, Location.USAGE, Prize.USAGE, Reward.USAGE);
+        CommandUtils.paginate(src, USAGE, Crate.USAGE, Effect.USAGE, Key.USAGE, Location.USAGE, Prize.USAGE, Reward.USAGE);
         return CommandResult.success();
     }
 
