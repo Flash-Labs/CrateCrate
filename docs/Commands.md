@@ -7,18 +7,20 @@ The available commands are as follows:
     - [`/crate crate give`](#crate-crate-give)
     - [`/crate crate list`](#crate-crate-list)
     - [`/crate crate open`](#crate-crate-open)
+ - [`/crate effect`](#crate-effect)
+    - [`/crate effect give`](#crate-effect-give)
  - [`/crate key`](#crate-key)
-   - [`/crate key balance`](#crate-key-balance)
-   - [`/crate key give`](#crate-key-give)
-   - [`/crate key list`](#crate-crate-list)
-   - [`/crate key take`](#crate-key-take)
+    - [`/crate key balance`](#crate-key-balance)
+    - [`/crate key give`](#crate-key-give)
+    - [`/crate key list`](#crate-crate-list)
+    - [`/crate key take`](#crate-key-take)
  - [`/crate location`](#crate-location)
     - [`/crate location delete`](#crate-location-delete)
     - [`/crate location set`](#crate-location-set)
  - [`/crate prize`](#crate-prize)
     - [`/crate prize give`](#crate-prize-give)
-- [`/crate reward`](#crate-reward)
-   - [`/crate reward give`](#crate-reward-give)
+ - [`/crate reward`](#crate-reward)
+    - [`/crate reward give`](#crate-reward-give)
 
 ---
 
@@ -79,6 +81,35 @@ Displays all crates the source has permission to open.
 
 Opens a crate for a player, which bypasses keys. Compared to `give`, `open`
 includes any opening effects and rolls a random reward.
+
+---
+
+## `/crate effect`
+
+- Usage: `/crate effect [subcommand ...]`
+   - `[subcommand ...]`: An effect subcommand (`give`) and arguments.
+- Permission: `cratecrate.command.effect.base`
+
+The base command for working with effects.
+
+### `/crate effect give`
+
+- Usage: `/crate effect give [player] <prize> [value]`
+   - `[player]`: A username or selector matching a single player
+     (online/offline), defaulting to the player executing this command (not
+     required for location-based effects).
+   - `[location]`: A world (optional for players) and xyz position, defaulting
+     to the location of the player argument if defined (required for
+     location-based effects).
+   - `<effect>`: A registered effect id.
+   - `[value]`: A reference value for the effect (varies by type, see below).
+- Permission: `cratecrate.command.prize.give.base`
+
+Gives an effect to a player/location. The `value` argument depends on the type
+of the effect:
+
+ - Potion: The integer duration, greater than `0` (in seconds)
+ - Firework, Particle, Sound: The xyz position offset (optional)
 
 ---
 

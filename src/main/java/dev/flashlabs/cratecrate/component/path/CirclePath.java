@@ -48,9 +48,9 @@ public final class CirclePath extends Path {
             node.resolve("scale", 2).get(Storm.DOUBLE.optional(1.0))
         );
         Vector3d axis = Vector3d.from(
-            node.resolve("axis", 0).get(Storm.DOUBLE.optional(1.0)),
+            node.resolve("axis", 0).get(Storm.DOUBLE.optional(0.0)),
             node.resolve("axis", 1).get(Storm.DOUBLE.optional(1.0)),
-            node.resolve("axis", 2).get(Storm.DOUBLE.optional(1.0))
+            node.resolve("axis", 2).get(Storm.DOUBLE.optional(0.0))
         );
         return new CirclePath(interval, precision, segments, shift, speed, scale, axis);
     }

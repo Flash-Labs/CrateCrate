@@ -24,10 +24,11 @@ public final class Give extends Command {
 
     public static final Text USAGE = CommandUtils.usage(
         "/crate effect give ",
-        "Gives an effect to a user/location.",
-        CommandUtils.argument("user", false, "A username or selector matching a single user (online/offline), defaulting to the player executing this command (not required for location-based effects)."),
+        "Gives an effect to a player/location.",
+        CommandUtils.argument("player", false, "A username or selector matching a single player (online/offline), defaulting to the player executing this command (not required for location-based effects)."),
+        CommandUtils.argument("location", false, "A world (optional for players) and xyz position, defaulting to the location of the player argument if defined (required for location-based effects)."),
         CommandUtils.argument("effect", true, "A registered effect id."),
-        CommandUtils.argument("value", false, "A reference value for the effect (varies by type).\n\n - Potion: The duration (in seconds).\n - Firework, Particle, Sound: The target (player/source, optional) and xyz offset (optional).")
+        CommandUtils.argument("value", false, "A reference value for the effect (varies by type).\n\n - Potion: The integer duration, greater than 0 (in seconds).\n - Firework, Particle, Sound: The xyz position offset (optional).")
     );
 
     @Inject

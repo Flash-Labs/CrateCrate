@@ -4,6 +4,7 @@ Effects are things that are triggered by actions such as opening a crate. The
 available types are:
 
  - [FireworkEffect](#FireworkEffect)
+ - [ParticleEffect](#ParticleEffect)
  - [PotionEffect](#PotionEffect)
  - [SoundEffect](#SoundEffect)
 
@@ -19,8 +20,8 @@ An effect that launches a firework when given.
 <id> = {
     firework = {
         shape = "<firework-shape>"
-        colors = [<RGB Color>...]
-        fades = [<RGB Color>...]
+        colors = [<Integer>...]
+        fades = [<Integer>...]
         trail = true/false
         flicker = true/false
         duration = <Integer>
@@ -36,8 +37,8 @@ If only the `shape` needs to be specified, prefer using an inline
 | Name | Type | Description | Default |
 | --- | --- | --- | --- |
 | `shape` | FireworkShape | The shape of the firework (`"ball"`/`"large_ball"`/`"burst"`/`"star"`/`"creeper"`) | Random |
-| `colors` | List<Integer> | The colors the firework has initially | Random (1-2 colors) |
-| `fades` | List<Integer> | The colors the firework fades into | Random (0-1 colors) |
+| `colors` | List<Integer> | The colors the firework has initially (RGB) | Random (1-2 colors) |
+| `fades` | List<Integer> | The colors the firework fades into (RGB) | Random (0-1 colors) |
 | `trail` | Boolean | Whether the firework leaves a trail | Random |
 | `flicker` | Boolean | Whether the firework has a flicker | Random |
 | `duration` | Integer | The duration of the firework flight | Random (1-3) |
@@ -107,6 +108,123 @@ effects = [
 
 ---
 
+## ParticleEffect
+
+An effect that runs a particle effect when given. Particle effects are generally
+only used as `idle` effects as an explicit duration cannot yet be customized.
+
+```java
+<id> = {
+    particle = {
+        type = "<particle-type>"
+        color = <Integer>
+    }
+    path = {
+        type = "circle"/"helix"/"spiral"/"vortex"
+        axis = [x, y, z] (circle only)
+        interval = <Integer>
+        precision = <Integer>
+        segments = <Integer>
+        shift = <Decimal>
+        speed = <Decimal>
+        scale = [x, y, z]
+    }
+}
+```
+
+If only the `particle`/`path` type needs to be specified, prefer setting it
+directly which will use the default values for the other properties.
+
+```java
+<id> = {
+    particle = "<particle-type>"
+    path = "circle"/"helix"/"spiral"/"vortex"
+}
+```
+
+### Properties
+
+| Name | Type | Description | Default |
+| --- | --- | --- | --- |
+| `type` | ParticleType | The particle type | Required |
+| `color` | Integer | The particle color (only for `minecraft:redstone_dust`) | Rainbow |
+| |
+| `type` | `"circle"`/`"helix"`/`"spiral"`/`"vortex"` | The path type | Required |
+| `axis` | Vector3d | The rotation axis (only for `circle` paths) | `[0.0, 1.0, 0.0]` |
+| `interval` | Integer | The interval between animation updates (in milliseconds) | `20` |
+| `precision` | Integer | The number of available points along the path | `120` |
+| `segments` | Integer | The number of individual particles being animated | `1` |
+| `shift` | Decimal | The initial time offset of the animation for path calculations | `0.0` |
+| `speed` | Decimal | The relative speed of the animation compared to the precision | `1.0` |
+| `scale` | Vector3d | The relative scale of the animation | `[1.0, 1.0, 1.0]` |
+| |
+| `target` | `"player"`/`"location"` | The first part of the reference value, whether the initial position is at the player or crate location | `"location"` |
+| `offset` | Vector3d | The second part of the reference value, the xyz offset from the initial position | `[0.0, 0.0, 0.0]` |
+
+### Referencing
+
+The reference value of a potion is its duration, which is in seconds.
+
+```java
+effects = [
+    ["<potion-id>", 10]
+    {
+        potion = ...
+        duration = Integer
+    }
+]
+```
+
+Unlike most other effects, particles cannot be defined as an inline reference as
+they often require further customization for many use cases.
+
+### Examples
+
+<details>
+<summary>Rainbow Helix</summary>
+
+A rainbow helix particle with `3` segments.
+
+```java
+rainbow-helix = {
+    particle = "minecraft:redstone_dust"
+    path = {
+        type = "helix"
+        segments = 3
+    }
+}
+```
+</details>
+
+<details>
+<summary>Enchanting Pillars (inline)</summary>
+
+A particle that produces `8` pillars of enchantment glyphs.
+
+```java
+effects = {
+    idle = [
+        {
+            particle = "minecraft:enchanting_glyphs"
+            path = {
+                type = "circle"
+                segments = 8
+                shift = 0.3925
+                speed = 0.0
+                scale = [1.5, 1.0, 1.5]
+            }
+            offset = [0.0, 0.75, 0.0]
+        }
+    ]
+}
+effects = [
+    ["minecraft:regeneration/2", 10]
+]
+```
+</details>
+
+---
+
 ## PotionEffect
 
 An effect that gives the player a potion effect when given.
@@ -122,7 +240,7 @@ An effect that gives the player a potion effect when given.
 ```
 
 If only the `type` needs to be specified, prefer using an inline
-[reference](#Referencing-1) instead of defining a new effect.
+[reference](#Referencing-2) instead of defining a new effect.
 
 ### Properties
 
@@ -204,7 +322,7 @@ An effect that plays a sound when given.
 ```
 
 If only the `type` needs to be specified, prefer using an inline
-[reference](#Referencing-2) instead of defining a new effect.
+[reference](#Referencing-3) instead of defining a new effect.
 
 ### Properties
 
