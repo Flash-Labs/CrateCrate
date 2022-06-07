@@ -5,11 +5,11 @@ plugins {
 }
 
 group = "dev.flashlabs.cratecrate"
-version = "0.0.2"
+version = "0.0.3"
 
 ext.spongeapiVersion = "7.4.0"
-ext.flashlibsVersion = "0.1.2"
-ext.stormVersion = "0.1.0"
+ext.flashlibsVersion = "v0.1.2"
+ext.stormVersion = "master-SNAPSHOT"
 
 repositories {
     mavenCentral()
@@ -20,8 +20,8 @@ repositories {
 
 dependencies {
     implementation("org.spongepowered:spongeapi:${spongeapiVersion}")
-    implementation("com.github.Flash-Labs:FlashLibs:v${flashlibsVersion}")
-    implementation("com.github.WillBAnders:Storm:v${stormVersion}")
+    implementation("com.github.Flash-Labs:FlashLibs:${flashlibsVersion}")
+    implementation("com.github.WillBAnders:Storm:${stormVersion}")
 }
 
 //Sets plugin metadata through Gradle build instead of the @Plugin annotation.
@@ -42,7 +42,7 @@ sponge {
 
 shadowJar {
     dependencies {
-        include dependency("com.github.WillBAnders:Storm:v${stormVersion}")
+        include dependency("com.github.WillBAnders:Storm:${stormVersion}")
     }
     relocate("dev.willbanders.storm", "${project.group}.storm")
     version = "v$version"
